@@ -55,3 +55,8 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Export PDF
+P-Fun/doc/export-pdf.sh
+P-Fun/doc/style.css
+P-Fun/doc/rapport.pdf
