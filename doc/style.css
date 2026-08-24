@@ -1,0 +1,186 @@
+/* ============================================
+   Style CSS pour export PDF — Rapport P-Fun
+   ============================================ */
+
+/* --- Police et base --- */
+body {
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+/* --- Titres --- */
+h1 {
+  font-size: 22pt;
+  color: #1a1a2e;
+  border-bottom: 3px solid #1a1a2e;
+  padding-bottom: 8px;
+  margin-top: 30px;
+  page-break-before: always;
+}
+
+h1:first-of-type {
+  page-break-before: avoid;
+  text-align: center;
+  font-size: 26pt;
+  border-bottom: none;
+}
+
+h2 {
+  font-size: 16pt;
+  color: #16213e;
+  border-bottom: 1.5px solid #e0e0e0;
+  padding-bottom: 5px;
+  margin-top: 25px;
+}
+
+h3 {
+  font-size: 13pt;
+  color: #0f3460;
+  margin-top: 18px;
+}
+
+h4 {
+  font-size: 11.5pt;
+  color: #333;
+  margin-top: 12px;
+}
+
+/* --- En-tête info --- */
+table:first-of-type {
+  margin: 15px auto;
+  border-collapse: collapse;
+}
+
+table:first-of-type td {
+  padding: 6px 16px;
+  border: none;
+  font-size: 10.5pt;
+}
+
+table:first-of-type td:first-child {
+  font-weight: bold;
+  color: #16213e;
+  background: #f0f4ff;
+}
+
+/* --- Tableaux --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 10pt;
+}
+
+thead {
+  background: #1a1a2e;
+  color: white;
+}
+
+th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+}
+
+td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+/* --- Légendes (blockquotes) --- */
+blockquote {
+  background: #f0f4ff;
+  border-left: 4px solid #1a1a2e;
+  padding: 10px 16px;
+  margin: 12px 0;
+  font-size: 9.5pt;
+  color: #333;
+  border-radius: 0 6px 6px 0;
+}
+
+blockquote p {
+  margin: 3px 0;
+}
+
+/* --- Code --- */
+code {
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 9.5pt;
+  font-family: "Consolas", "Courier New", monospace;
+}
+
+pre {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  padding: 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 9pt;
+  line-height: 1.4;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* --- Table des matières --- */
+h2:has(+ ul) {
+  margin-bottom: 0;
+}
+
+/* --- Séparateurs --- */
+hr {
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin: 20px 0;
+}
+
+/* --- Listes --- */
+ul, ol {
+  padding-left: 22px;
+}
+
+li {
+  margin-bottom: 4px;
+}
+
+/* --- Liens --- */
+a {
+  color: #0f3460;
+  text-decoration: none;
+}
+
+/* --- Texte en gras --- */
+strong {
+  color: #1a1a2e;
+}
+
+/* --- Italique --- */
+em {
+  color: #666;
+}
+
+/* --- Pagination & pied de page --- */
+@page {
+  size: A4;
+  margin: 20mm 15mm;
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font-size: 9pt;
+    color: #999;
+  }
+}
+
+@page :first {
+  margin-top: 30mm;
+}
