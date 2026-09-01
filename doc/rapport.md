@@ -4,7 +4,7 @@
 | | |
 |---|---|
 | **Projet** | P-Fun |
-| **Auteur(s)** | Damien Rochat |
+| **Auteur** | Damien Rochat |
 | **Date de rendu** | *24 août 2026 / 30 octobre 2026* |
 | **Encadrant** | *M. Carrel* |
 
@@ -43,7 +43,7 @@ On a choisi le domaine de la cryptomonnaie. Par exemple, on pourra comparer l'é
 
 #### Objectifs pédagogiques
 
-Le projet doit nous faire pratiquer ce qu'on a vu au module 323 :
+Le projet doit me faire pratiquer ce qu'on a vu au module 323 :
 
 - utiliser LINQ au lieu des boucles for/foreach classiques ;
 - écrire au moins deux extensions du langage C# ;
@@ -190,15 +190,7 @@ Et un message de confirmation doit indiquer le nombre de points ajoutés
 
 On travaille en agile, avec des sprints d'une semaine. À la fin de chaque sprint, on fait un point d'avancement et une petite démo. On utilise un tableau Kanban pour suivre les tâches (à faire, en cours, terminé). Tout le code est sur Git, avec une branche par fonctionnalité.
 
-### 3.2 Répartition des tâches
-
-| Rôle | Membre | Responsabilités |
-|:---|:---|:---|
-| Données / back-end | *À compléter* | API Binance, parsing, stockage JSON, LINQ |
-| Interface / front-end | *À compléter* | WinForms, ScottPlot, affichage des courbes |
-| Tests et documentation | *Binôme* | Tests unitaires, rapport, journal de travail |
-
-### 3.3 Planning prévisionnel
+### 3.2 Planning prévisionnel
 
 | Sprint | Période | Tâches | Livrable | Statut |
 |:---:|:---|:---|:---|:---:|
@@ -218,11 +210,11 @@ On travaille en agile, avec des sprints d'une semaine. À la fin de chaque sprin
 > - ✅ Terminé
 > - ❌ Bloqué
 
-### 3.4 Estimation du temps
+### 3.3 Estimation du temps
 
-Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 semaines, ça fait environ 2 à 3 périodes par semaine et par personne, en plus du travail à la maison. On garde un peu de marge dans les sprints 7 et 8 pour les imprévus.
+Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 semaines, ça fait environ 2 à 3 périodes par semaine, en plus du travail à la maison. On garde un peu de marge dans les sprints 7 et 8 pour les imprévus.
 
-### 3.5 Risques
+### 3.4 Risques
 
 | Risque | Mesure |
 |:---|:---|
@@ -280,7 +272,7 @@ Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 s
 
 ### 6.2 Méthodologie
 
-<!-- Méthode utilisée (agile, cascade, etc.), outils de suivi, organisation d'équipe -->
+<!-- Méthode utilisée (agile, cascade, etc.), outils de suivi -->
 
 *À compléter.*
 
