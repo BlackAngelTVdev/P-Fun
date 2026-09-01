@@ -57,6 +57,7 @@ TestResult.xml
 nunit-*.xml
 
 # Export PDF
-P-Fun/doc/export-pdf.sh
-P-Fun/doc/style.css
-P-Fun/doc/rapport.pdf
+./doc/export-pdf.sh
+./doc/style.css
+./doc/rapport.pdf
+.freebuff
