@@ -32,100 +32,185 @@
 
 #### Objectifs produit
 
-Le projet consiste à concevoir et développer **P-Fun**, une application de bureau permettant d'afficher des graphiques de séries temporelles. Le programme doit être capable de :
+Le but du projet est de créer un logiciel qui affiche des graphiques de séries temporelles. Concrètement, le programme doit permettre :
 
-- **Afficher plusieurs séries de données simultanément** sur un même graphique, avec un axe temporel commun, afin de pouvoir comparer l'évolution des différentes courbes dans le temps.
-- **Stocker les données localement** au format JSON, afin que l'utilisateur puisse consulter et retravailler ses séries même hors connexion.
-- **Importer de nouvelles données** depuis différentes sources (fichiers CSV, fichiers JSON, ou directement depuis l'API Binance), afin de mettre à jour les séries stockées localement.
-- **Offrir une grande flexibilité d'affichage** : sélection des séries à afficher/masquer, zoom, navigation dans le temps, afin de permettre une analyse fine des données.
+- d'afficher plusieurs séries en même temps sur un même graphique, pour pouvoir les comparer ;
+- de stocker les données en local au format JSON, pour pouvoir les consulter sans connexion ;
+- d'importer de nouvelles données (fichiers CSV, fichiers JSON ou API Binance) ;
+- de zoomer, de naviguer dans le temps et de choisir les séries à afficher ou masquer.
 
-Le domaine choisi est la **cryptomonnaie** : l'application permettra notamment de comparer l'évolution de plusieurs paires de devises (BTC/USDT, ETH/USDT, etc.) sur une période commune, ce qui est particulièrement pertinent pour observer les corrélations entre les différentes monnaies.
+On a choisi le domaine de la cryptomonnaie. Par exemple, on pourra comparer l'évolution du Bitcoin et de l'Ethereum sur la même période et voir laquelle a le mieux performé.
 
 #### Objectifs pédagogiques
 
-Ce projet a pour but de mettre en pratique les connaissances acquises durant le cours de 323, et plus particulièrement :
+Le projet doit nous faire pratiquer ce qu'on a vu au module 323 :
 
-- **Mettre en œuvre les principes de la programmation fonctionnelle** en C# : utilisation systématique de **LINQ** (à la place des boucles `for`/`foreach` classiques), fonctions d'ordre supérieur, immuabilité, et développement d'**au moins deux extensions du langage C#** (méthodes d'extension).
-- **Approfondir les connaissances en C#** et en .NET, notamment à travers la consommation d'une API REST, la sérialisation/désérialisation JSON et la construction d'une interface graphique avec **WinForms**.
-- **Découvrir une librairie de visualisation de données** (ScottPlot) et apprendre à l'intégrer dans une application existante.
-- **Appliquer une démarche de gestion de projet** : analyse fonctionnelle, user stories, maquettes, planification en sprints, tests unitaires et journal de travail.
+- utiliser LINQ au lieu des boucles for/foreach classiques ;
+- écrire au moins deux extensions du langage C# ;
+- approfondir le C# (API REST, JSON, interface graphique WinForms) ;
+- découvrir la librairie ScottPlot pour les graphiques ;
+- suivre une démarche de projet complète : user stories, maquettes, planification, tests unitaires et journal de travail.
 
 ### 1.2 Description du domaine
 
 #### Le domaine d'application
 
-Le domaine choisi est la **cryptomonnaie et la finance de manière générale**. Les marchés de cryptomonnaies sont des marchés extrêmement volatils, ouverts 24h/24 et 7j/7, qui génèrent en continu d'énormes volumes de données temporelles : prix de transaction, volumes d'échanges, capitalisation, etc. C'est donc un terrain idéal pour l'analyse de séries temporelles.
+On a choisi la cryptomonnaie et la finance en général. C'est un domaine qui produit beaucoup de données : les marchés sont ouverts 24h/24, 7j/7, et les prix changent en permanence. C'est donc adapté pour des séries temporelles.
 
-Comparer plusieurs cryptomonnaies sur un même graphique présente un intérêt concret :
+Comparer plusieurs cryptomonnaies sur un même graphique est utile pour voir :
 
-- **Comparer les performances** : quelles monnaies ont le mieux performé sur une période donnée ?
-- **Observer les corrélations** : les grandes cryptomonnaies (Bitcoin, Ethereum) évoluent souvent de manière similaire ; visualiser plusieurs courbes ensemble permet de repérer ces tendances communes, ainsi que les divergences.
-- **Analyser la volatilité** : certaines monnaies sont beaucoup plus volatiles que d'autres, ce qui apparaît clairement lorsqu'on superpose leurs courbes.
+- quelles monnaies ont le mieux performé sur une période donnée ;
+- si les monnaies évoluent de la même façon (le Bitcoin et l'Ethereum bougent souvent ensemble) ou au contraire se démarquent ;
+- lesquelles sont plus volatiles que d'autres.
 
 #### Les séries de données choisies
 
-Conformément au cahier des charges (au minimum 5 séries cohérentes de 500 valeurs chacune), le projet s'appuie sur les séries suivantes :
+Le cahier des charges demande au moins 5 séries cohérentes de 500 valeurs minimum. On a pris 5 paires de cryptomonnaies, toutes cotées contre l'USDT (un stablecoin qui vaut environ 1 dollar) :
 
-| Série | Description | Pourquoi la comparer aux autres ? |
-|:---|:---|:---|
-| BTC/USDT | Bitcoin contre dollar | Référence du marché, première capitalisation |
-| ETH/USDT | Ethereum contre dollar | Deuxième capitalisation, fortement corrélée au BTC |
-| BNB/USDT | Binance Coin contre dollar | Monnaie d'échange majeure, liée à l'écosystème Binance |
-| SOL/USDT | Solana contre dollar | Alternative technique à Ethereum, dynamique différente |
-| XRP/USDT | Ripple contre dollar | Cas d'usage orienté paiements, évolution parfois décorrélée |
+| Série | Description |
+|:---|:---|
+| BTC/USDT | Bitcoin, la référence du marché |
+| ETH/USDT | Ethereum, la deuxième plus grosse capitalisation |
+| BNB/USDT | La monnaie de la plateforme Binance |
+| SOL/USDT | Solana, une alternative plus récente |
+| XRP/USDT | Ripple, orienté paiements |
 
-Ces cinq séries sont **cohérentes** entre elles : ce sont toutes des paires de cryptomonnaies cotées contre le même actif de référence (l'USDT, stablecoin adossé au dollar), ce qui permet de les comparer directement sur un axe temporel commun sans conversion. L'historique de cours de chacune fournit largement plus de 500 valeurs (données quotidiennes sur plusieurs années, ou données horaires sur quelques semaines).
+Ces séries sont cohérentes entre elles parce qu'elles sont toutes comparées au même actif (l'USDT). On peut donc les afficher sur le même graphique et les comparer directement, sans conversion. Chaque série contient largement plus de 500 valeurs (par exemple les cours quotidiens sur plusieurs années).
 
 #### Les sources de données
 
-La source de données principale est l'**API publique de Binance** (`https://api.binance.com`), et plus spécifiquement le endpoint des **klines (chandeliers)**, qui renvoie pour une paire donnée l'historique des cours : prix d'ouverture, de clôture, plus haut, plus bas, et volume, pour un intervalle de temps donné (1h, 1 jour, etc.). Cette API est gratuite, ne nécessite pas d'authentification pour les données publiques, et renvoie les données au format JSON.
+Les données viennent de l'API publique de Binance (`https://api.binance.com`). On utilise le endpoint des klines (chandeliers), qui renvoie pour une paire donnée l'historique des prix : ouverture, clôture, plus haut, plus bas et volume, pour un intervalle choisi (1h, 1 jour, etc.). Cette API est gratuite et ne demande pas d'inscription pour les données publiques. Elle renvoie du JSON.
 
-Les données récupérées sont ensuite **stockées localement au format JSON**, ce qui permet à l'utilisateur de consulter ses séries hors connexion, et d'y importer de nouvelles valeurs depuis des fichiers CSV ou JSON conformément au cahier des charges.
+Les données récupérées sont ensuite enregistrées en local au format JSON. Comme ça, on peut les consulter hors ligne et en importer d'autres depuis des fichiers CSV ou JSON.
 
 
 ---
 
 ## 2. Analyse fonctionnelle
 
-<!-- Description des fonctionnalités, cas d'utilisation, besoins fonctionnels et non-fonctionnels -->
+### 2.1 User stories
 
-*À compléter.*
+Les user stories ont été rédigées au début du projet, avant le code, comme demandé dans le cahier des charges. Elles sont suivies sur le projet Kanban GitHub et dans les issues du repo.
+
+| ID | User story | Priorité |
+|:---|:---|:---:|
+| US1 | Affichage des 5 séries au lancement de l'application | Haute |
+| US2 | Choix des séries affichées ou masquées | Haute |
+| US3 | Stockage local des séries, travail hors connexion | Haute |
+| US4 | Import de données (CSV, JSON, API) | Haute |
+| US5 | Flexibilité d'affichage pour analyser les données | Moyenne |
+
+#### US1 – Affichage
+
+> En tant qu'utilisateur, je veux que quand je lance l'application, une fenêtre s'ouvre avec les 5 séries, afin de visualiser rapidement le cours des cryptomonnaies.
+
+**Scénario 1 : Affichage des 5 séries principales au lancement**
+```
+Étant donné que l'application est installée
+Quand je lance l'application
+Alors une fenêtre principale doit s'ouvrir immédiatement
+Et la fenêtre doit afficher exactement 5 séries de données
+Et chaque série doit présenter des données différentes
+```
+
+#### US2 – Sélection des séries
+
+> En tant qu'utilisateur, je veux pouvoir déterminer quelle série est affichée ou pas, afin de comparer les différences.
+
+**Scénario 1 : Sélection/désélection d'une série spécifique**
+```
+Étant donné que je suis sur la fenêtre de comparaison avec les 5 séries affichées
+Quand je décoche la case de masquage de la série "Bitcoin"
+Alors la courbe/série "Bitcoin" doit disparaître du graphique
+Et l'échelle du graphique doit s'adapter automatiquement aux séries restantes
+Et les 4 autres séries doivent rester visibles
+```
+
+#### US3 – Stockage local
+
+> En tant qu'utilisateur, je veux que PTL stocke localement l'ensemble des séries, pour que je puisse travailler sur mes données hors connexion.
+
+**Scénario 1 : Persistance et consultation des séries en mode hors connexion**
+```
+Étant donné que l'application PTL a synchronisé et stocké l'ensemble des séries localement lors de la dernière connexion
+Et que l'appareil est actuellement hors ligne (pas d'accès au réseau)
+Quand je lance l'application et accède au module de visualisation
+Alors l'ensemble des séries enregistrées doit s'afficher correctement sur l'interface
+Et je dois pouvoir consulter, filtrer et comparer les données sans interruption ni message d'erreur réseau
+Et un indicateur discret doit informer que les données affichées proviennent du cache local
+```
+
+#### US4 – Importation
+
+> En tant qu'utilisateur, je veux ajouter des valeurs aux séries stockées localement. PTL me permet d'importer un ou plusieurs formats de données, comme par exemple : fichiers CSV, fichiers JSON, JSON reçu d'une API.
+
+**Scénario 1 : Importation réussie d'un fichier CSV ou JSON local**
+```
+Étant donné que l'application PTL est ouverte
+Quand j'importe un fichier local valide (format .csv ou .json) contenant de nouvelles valeurs pour une série
+Alors les données doivent être analysées et intégrées dans le stockage local
+Et la série concernée doit être automatiquement mise à jour dans l'interface graphique
+Et un message de confirmation doit indiquer le nombre de points ajoutés
+```
+
+#### US5 – Flexibilité d'affichage
+
+> En tant qu'utilisateur, je veux avoir une grande flexibilité d'affichage afin de pouvoir analyser mes données en détail.
+
+### 2.2 Besoins fonctionnels
+
+À partir des user stories, le logiciel doit permettre :
+
+- d'afficher plusieurs séries de cryptomonnaies sur un même graphique (US1) ;
+- de choisir les séries visibles ou masquées (US2) ;
+- de stocker les données en local pour travailler hors connexion (US3) ;
+- d'importer des données depuis des fichiers CSV, JSON ou une API (US4) ;
+- de zoomer et naviguer dans les données (US5).
+
+### 2.3 Besoins non-fonctionnels
+
+- Performance : l'affichage doit rester fluide avec des séries de plus de 500 valeurs.
+- Fiabilité : si l'API ne répond pas, l'application doit continuer à fonctionner avec les données locales.
+- Utilisabilité : l'interface doit être simple à prendre en main.
+- Maintenabilité : code organisé, commenté, avec des tests unitaires.
+
+### 2.4 Contraintes techniques
+
+- Utiliser LINQ (pas de boucle for)
+- Implémenter au moins 2 extensions du langage C#
+- Interface graphique en WinForms
+- Graphiques avec ScottPlot
+- Au minimum 3 tests unitaires significatifs
 
 ---
 
 ## 3. Planification initiale
 
-### 3.1 Méthodologie choisie
+### 3.1 Méthodologie
 
-Nous adoptons une approche **agile** adaptée à la taille du projet et à l'équipe :
-
-- **Sprints d'une semaine** : chaque sprint se termine par un point d'avancement et une démo interne.
-- **Kanban** pour visualiser l'avancement.
-- **Revue hebdomadaire** : comparaison de l'avancement réel avec le planning, réajustement des priorités si nécessaire.
-- **Versioning Git** : une branche par fonctionnalité, merge après validation, commits réguliers et explicites.
+On travaille en agile, avec des sprints d'une semaine. À la fin de chaque sprint, on fait un point d'avancement et une petite démo. On utilise un tableau Kanban pour suivre les tâches (à faire, en cours, terminé). Tout le code est sur Git, avec une branche par fonctionnalité.
 
 ### 3.2 Répartition des tâches
 
 | Rôle | Membre | Responsabilités |
 |:---|:---|:---|
-| Développeur back-end / données | *À compléter* | Connexion à l'API Binance, parsing, stockage JSON, LINQ |
-| Développeur front-end / GUI | *À compléter* | Interface WinForms, intégration ScottPlot, affichage des courbes |
-| Tests & documentation | *Binôme* | Tests unitaires, rapport, journal de travail |
-
+| Données / back-end | *À compléter* | API Binance, parsing, stockage JSON, LINQ |
+| Interface / front-end | *À compléter* | WinForms, ScottPlot, affichage des courbes |
+| Tests et documentation | *Binôme* | Tests unitaires, rapport, journal de travail |
 
 ### 3.3 Planning prévisionnel
 
-| Sprint | Période | Tâches | Livrable attendu | Statut |
+| Sprint | Période | Tâches | Livrable | Statut |
 |:---:|:---|:---|:---|:---:|
-| Sprint 0 | 24 août | Analyse du besoin, rédaction des user stories, maquettes | Cahier des charges fonctionnel validé | ⬜ |
-| Sprint 1 | 31 août | Mise en place du projet (Git, structure C#), premier GUI WinForms | Fenêtre principale avec graphique vide | ⬜ |
-| Sprint 2 | 7 septembre | Connexion à l'API Binance, parsing des données | Affichage des premières vraies données | ⬜ |
-| Sprint 3 | 14 septembre | Stockage local JSON, importation de nouvelles données (CSV/JSON) | Persistance des données fonctionnelle | ⬜ |
-| Sprint 4 | 21 septembre | Affichage multi-séries, sélection des séries, flexibilité d'affichage (zoom, axes) | Graphique multi-courbes interactif | ⬜ |
-| Sprint 5 | 28 septembre | Refactoring LINQ, extensions C#, optimisation | Code conforme aux contraintes techniques | ⬜ |
-| Sprint 6 | 5 octobre | Tests unitaires (≥ 3 significatifs), corrections de bugs | Rapport de tests | ⬜ |
-| Sprint 7 | 12 octobre | Finitions, UI, documentation du code | Version candidate | ⬜ |
-| Sprint 8 | 19–30 octobre | Rapport final, bilan, préparation de la release GitHub | Livraison finale | ⬜ |
+| 0 | 24 août | Analyse du besoin, user stories, maquettes | CDC fonctionnel validé | ⬜ |
+| 1 | 31 août | Projet Git, structure C#, premier GUI WinForms | Fenêtre principale avec un graphique vide | ⬜ |
+| 2 | 7 septembre | Connexion à l'API Binance, parsing des données | Affichage des premières vraies données | ⬜ |
+| 3 | 14 septembre | Stockage local JSON, import CSV/JSON | Persistance des données | ⬜ |
+| 4 | 21 septembre | Multi-séries, sélection des séries, zoom | Graphique multi-courbes interactif | ⬜ |
+| 5 | 28 septembre | Refactoring LINQ, extensions C# | Code conforme aux contraintes | ⬜ |
+| 6 | 5 octobre | Tests unitaires (≥ 3), corrections de bugs | Rapport de tests | ⬜ |
+| 7 | 12 octobre | Finitions, UI, documentation | Version candidate | ⬜ |
+| 8 | 19–30 octobre | Rapport final, bilan, release GitHub | Livraison finale | ⬜ |
 
 > **Légende des statuts :**
 > - ⬜ Non commencé
@@ -133,18 +218,18 @@ Nous adoptons une approche **agile** adaptée à la taille du projet et à l'éq
 > - ✅ Terminé
 > - ❌ Bloqué
 
-### 3.5 Estimation du temps
+### 3.4 Estimation du temps
 
-Le projet représente **24 périodes** de travail. Sur la base d'un sprint par semaine sur ~9 semaines, cela correspond à environ **2 à 3 périodes par semaine** par membre, hors travail personnel. Une marge de sécurité est intégrée dans les sprints 7 et 8 pour absorber les imprévus.
+Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 semaines, ça fait environ 2 à 3 périodes par semaine et par personne, en plus du travail à la maison. On garde un peu de marge dans les sprints 7 et 8 pour les imprévus.
 
-### 3.6 Gestion des risques
+### 3.5 Risques
 
-| Risque | Impact | Mesure préventive / corrective |
-|:---|:---:|:---|
-| Indisponibilité ou changement de l'API Binance | 🔴 | Mettre en cache les données, prévoir une source de secours (données fictives) |
-| Retard sur un sprint | 🟠 | Revue hebdomadaire, réajustement des priorités, marge en fin de planning |
-| Difficultés avec ScottPlot / WinForms | 🟠 | Montée en compétence en début de projet (Sprint 1), documentation officielle |
-| Perte de données / code | 🔴 | Git avec push régulier, sauvegarde des données JSON |
+| Risque | Mesure |
+|:---|:---|
+| L'API Binance tombe ou change | Mettre les données en cache, prévoir des données fictives en secours |
+| Retard sur un sprint | Revue hebdomadaire, réajustement des priorités, marge en fin de planning |
+| Difficultés avec ScottPlot / WinForms | Se former au début du projet (sprint 1), documentation officielle |
+| Perte de code ou de données | Push Git régulier, sauvegarde des JSON |
 
 
 
