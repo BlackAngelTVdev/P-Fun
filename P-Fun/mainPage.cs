@@ -1,12 +1,11 @@
-using System.Drawing;
+using P_Fun.Data;
+using P_Fun.Extensions;
+using P_Fun.Models;
 
 namespace P_Fun
 {
     public partial class mainPage : Form
     {
-        private static readonly string[] SeriesPairs =
-            ["BTC/USDT", "ETH/USDT", "BNB/USDT", "SOL/USDT", "XRP/USDT"];
-
         public mainPage()
         {
             InitializeComponent();
@@ -15,16 +14,13 @@ namespace P_Fun
 
         private void BuildSeriesCheckBoxes()
         {
-            SeriesPairs
-                .Select((pair, index) => new CheckBox
-                {
-                    Text = pair,
-                    AutoSize = true,
-                    Checked = true,
-                    Location = new Point(20, 20 + index * 30),
-                })
+            SeriesCatalog.All
+                .Select((series, index) => series.ToCheckBox(index))
                 .ToList()
                 .ForEach(sidePanel.Controls.Add);
         }
+
+        public IEnumerable<CryptoSeries> SelectedSeries =>
+            SeriesCatalog.All.Selected(sidePanel.Controls.OfType<CheckBox>());
     }
 }
