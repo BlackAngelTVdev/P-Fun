@@ -13,7 +13,7 @@ namespace P_Fun
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
+        
 
         private void InitializeComponent()
         {
@@ -49,7 +49,6 @@ namespace P_Fun
             ResumeLayout(false);
         }
 
-        #endregion
 
         private ScottPlot.WinForms.FormsPlot plotPanel;
         private System.Windows.Forms.Panel sidePanel;

@@ -10,6 +10,7 @@ namespace P_Fun
         {
             InitializeComponent();
             BuildSeriesCheckBoxes();
+            BuildImportButton();
             PlotSampleData();
         }
 
@@ -19,6 +20,27 @@ namespace P_Fun
                 .Select((series, index) => series.ToCheckBox(index))
                 .ToList()
                 .ForEach(sidePanel.Controls.Add);
+        }
+
+        private void BuildImportButton()
+        {
+            var importButton = new Button
+            {
+                Text = "Importer un CSV…",
+                Location = new Point(20, 20 + SeriesCatalog.All.Count * 30),
+                Size = new Size(160, 30),
+            };
+            importButton.Click += (_, _) => ImportSeriesFromCsv();
+            sidePanel.Controls.Add(importButton);
+        }
+
+        private void ImportSeriesFromCsv()
+        {
+            // WIP : le chemin en dur pointe vers un fichier qui n'existe pas encore.
+            IReadOnlyList<CryptoSeries> imported = CsvSeriesImporter.Import("data/series.csv");
+            SeriesCatalog.Add(imported);
+            sidePanel.Controls.Clear();
+            BuildSeriesCheckBoxes();
         }
 
         private void PlotSampleData()
