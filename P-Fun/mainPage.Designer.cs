@@ -17,42 +17,41 @@ namespace P_Fun
 
         private void InitializeComponent()
         {
-            this.plotPanel = new System.Windows.Forms.Panel();
-            this.sidePanel = new System.Windows.Forms.Panel();
-            this.SuspendLayout();
+            plotPanel = new ScottPlot.WinForms.FormsPlot();
+            sidePanel = new Panel();
+            SuspendLayout();
             // 
             // plotPanel
             // 
-            this.plotPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.plotPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.plotPanel.Location = new System.Drawing.Point(0, 0);
-            this.plotPanel.Name = "plotPanel";
-            this.plotPanel.Size = new System.Drawing.Size(600, 450);
-            this.plotPanel.TabIndex = 0;
+            plotPanel.Dock = DockStyle.Fill;
+            plotPanel.Location = new Point(0, 0);
+            plotPanel.Name = "plotPanel";
+            plotPanel.Size = new Size(761, 695);
+            plotPanel.TabIndex = 0;
             // 
             // sidePanel
             // 
-            this.sidePanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.sidePanel.Location = new System.Drawing.Point(600, 0);
-            this.sidePanel.Name = "sidePanel";
-            this.sidePanel.Size = new System.Drawing.Size(200, 450);
-            this.sidePanel.TabIndex = 1;
+            sidePanel.Dock = DockStyle.Right;
+            sidePanel.Location = new Point(761, 0);
+            sidePanel.Name = "sidePanel";
+            sidePanel.Size = new Size(200, 695);
+            sidePanel.TabIndex = 1;
             // 
             // mainPage
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.plotPanel);
-            this.Controls.Add(this.sidePanel);
-            this.Name = "mainPage";
-            this.Text = "mainPage";
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(961, 695);
+            Controls.Add(plotPanel);
+            Controls.Add(sidePanel);
+            Name = "mainPage";
+            Text = "mainPage";
+            ResumeLayout(false);
         }
 
         #endregion
 
-        private System.Windows.Forms.Panel plotPanel;
+        private ScottPlot.WinForms.FormsPlot plotPanel;
         private System.Windows.Forms.Panel sidePanel;
     }
 }
