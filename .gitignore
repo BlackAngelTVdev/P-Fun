@@ -61,3 +61,6 @@ nunit-*.xml
 ./doc/style.css
 ./doc/rapport.pdf
 .freebuff
+
+# Visual Studio user-specific
+.vs/
