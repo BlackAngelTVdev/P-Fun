@@ -12,5 +12,11 @@ namespace P_Fun.Data
             new CryptoSeries("SOL/USDT", "Solana, une alternative plus récente"),
             new CryptoSeries("XRP/USDT", "Ripple, orienté paiements"),
         ];
+
+        private static readonly List<CryptoSeries> _extra = [];
+
+        public static IReadOnlyList<CryptoSeries> AllWithExtras => [.. All, .. _extra];
+
+        public static void Add(IEnumerable<CryptoSeries> series) => _extra.AddRange(series);
     }
 }
