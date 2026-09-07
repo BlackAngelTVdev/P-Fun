@@ -1,0 +1,21 @@
+Date,Nom,Temps,État,Description,Type
+"24/08/2026","commit initial","[2]","[DONE]",""
+"24/08/2026","commit initial","[105]","[DONE]","explication du projet (CdC, Carnet de voyage, projet hanbook)"
+"24/08/2026","chore(readme): écriture du readme + structure de fichiers","[21]","[DONE]",""
+"24/08/2026","chore(gitignore): ajoute le script d'export pdf aux fichiers ignorés","[19]","[DONE]",""
+"24/08/2026","chore(rapport): début du rapport","[30]","[DONE]",""
+
+"31/08/2026","absence","[180]","[DONE]",""
+
+"01/09/2026","docs(rapport): enrichit l'introduction et la planification initiale","[30]","[DONE]","Étoffe les objectifs produit et pédagogiques, décrit le domaine (cryptomonnaies, 5 séries cohérentes, API Binance) et remplace la planification par une version complète (méthodologie, sprints, répartition des tâches, risques)."
+"01/09/2026","docs(rapport): rédige l'analyse fonctionnelle avec les user stories","[30]","[DONE]","Ajoute l'analyse fonctionnelle basée sur les user stories du projet Kanban GitHub, avec besoins fonctionnels et non-fonctionnels, ainsi que les contraintes techniques."
+"01/09/2026","docs(rapport): retire la répartition des tâches (projet solo)","[15]","[DONE]","Supprime la section répartition des tâches et toutes les mentions d'équipe ou de binôme dans le rapport. Adapte les formulations au singulier et renumérote les sous-sections de la planification."
+
+"07/09/2026","feat(gui): ajoute la fenêtre principale avec le panneau graphique et les checkboxes des séries","[12]","[DONE]",""
+"07/09/2026","refactor(gui): génère les checkboxes des séries avec LINQ","[18]","[DONE]",""
+"07/09/2026","feat(models): ajoute le record immuable CryptoSeries","[26]","[DONE]",""
+"07/09/2026","feat(data): ajoute le catalogue des 5 séries crypto","[12]","[DONE]",""
+"07/09/2026","refactor(gui): génère les checkboxes avec LINQ via des méthodes d'extension","[42]","[DONE]",""
+"07/09/2026","feat(gui): ajoute ScottPlot pour afficher un graphique X/Y à gauche","[25min]","[DONE]",""
+"07/09/2026","WIP feat(data): ajoute l'importeur de séries depuis un fichier CSV","[20]","[DONE]",""
+"07/09/2026","WIP feat(gui): branche l'import CSV dans la fenêtre principale","[18]","[DONE]",""
