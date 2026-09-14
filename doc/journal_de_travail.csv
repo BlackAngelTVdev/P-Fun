@@ -31,3 +31,4 @@ Date,Nom,Temps,État,Description,Type
 "14/09/2026","feat(compart): ajout d'un bouton pour changer ajuster l'echelle","[40]","[DONE]","vu les écart que j'ai entre mes devise j'ai décider d'ajouter un bouton pour comparé. le consepete mettre tous en Base 100 pour une meuilleur comparaison. Un hover sur les points indique la valeur de base"
 "14/09/2026","Feat(Test): ajout de teste unitaire basiques","[20]","[WIP]","Structure basique tests basique pas forcement fonctionnel"
 "14/09/2026","doc(Prof): discution","[25]","[DONE]",""
+"14/09/2026","refactor(ALL): sortire du mainPage.cs le code","[22]","[WIP]",""
