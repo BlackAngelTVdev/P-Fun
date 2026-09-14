@@ -5,24 +5,19 @@ namespace P_Fun.Extensions
 {
     public static class SeriesExtensions
     {
-        public static CheckBox ToCheckBox(this CryptoSeries series, int index) => new()
+        /// <summary>
+        /// Case à cocher de la série, libellée avec son nombre d'entrées : « BTC (1000) ».
+        /// La série est conservée dans le Tag, donc la sélection reste fiable même
+        /// si le libellé change.
+        /// </summary>
+        public static CheckBox ToCheckBox(this PriceSeries series, int index) => new()
         {
-            Text = series.Pair,
+            Text = $"{series.Name} ({series.Closes.Length})",
             Tag = series,
             Location = new Point(20, 20 + index * 30),
             AutoSize = true,
             Checked = true,
             UseVisualStyleBackColor = true,
         };
-
-        public static IEnumerable<CryptoSeries> Selected(this IEnumerable<CryptoSeries> all, IEnumerable<CheckBox> checkBoxes)
-        {
-            HashSet<string> pairs = checkBoxes
-                .Where(cb => cb.Checked)
-                .Select(cb => cb.Text)
-                .ToHashSet();
-
-            return all.Where(series => pairs.Contains(series.Pair));
-        }
     }
 }
