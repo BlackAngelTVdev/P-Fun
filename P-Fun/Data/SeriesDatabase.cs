@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.Data.Sqlite;
 using P_Fun.Models;
 
@@ -78,13 +79,11 @@ namespace P_Fun.Data
             using SqliteCommand command = connection.CreateCommand();
             command.CommandText = "SELECT Symbol, OpenTime, Close FROM Candles ORDER BY Symbol, OpenTime;";
 
-            List<StoredCandle> candles = [];
-            using (SqliteDataReader reader = command.ExecuteReader())
-            {
-                candles.AddRange(ReadCandles(reader));
-            }
-
-            return candles
+            return ReadRows(command)
+                .Select(row => new StoredCandle(
+                    Convert.ToString(row[0]) ?? string.Empty,
+                    Convert.ToInt64(row[1]),
+                    Convert.ToDouble(row[2])))
                 .GroupBy(candle => candle.Symbol)
                 .Select(group => new PriceSeries(
                     group.Key,
@@ -160,28 +159,24 @@ namespace P_Fun.Data
             command.CommandText = "SELECT OpenTime FROM Candles WHERE Symbol = $symbol;";
             command.Parameters.AddWithValue("$symbol", symbol);
 
-            using SqliteDataReader reader = command.ExecuteReader();
-            return ReadTimestamps(reader);
+            return [.. ReadRows(command).Select(row => Convert.ToInt64(row[0]))];
         }
 
-        private static IEnumerable<StoredCandle> ReadCandles(SqliteDataReader reader)
+        /// <summary>
+        /// Exécute une requête et rend ses lignes exploitables avec LINQ. C'est
+        /// l'équivalent sans boucle de <c>while (reader.Read())</c> : ADO.NET ne
+        /// fournit pas d'énumérateur, on matérialise donc la réponse en mémoire
+        /// (le volume d'un import reste de l'ordre de quelques milliers de lignes).
+        /// </summary>
+        private static IEnumerable<DataRow> ReadRows(SqliteCommand command)
         {
-            while (reader.Read())
+            DataTable table = new();
+            using (SqliteDataReader reader = command.ExecuteReader())
             {
-                yield return new StoredCandle(reader.GetString(0), reader.GetInt64(1), reader.GetDouble(2));
-            }
-        }
-
-        private static HashSet<long> ReadTimestamps(SqliteDataReader reader)
-        {
-            HashSet<long> timestamps = [];
-
-            while (reader.Read())
-            {
-                timestamps.Add(reader.GetInt64(0));
+                table.Load(reader);
             }
 
-            return timestamps;
+            return table.Rows.Cast<DataRow>();
         }
 
         private SqliteConnection OpenConnection()

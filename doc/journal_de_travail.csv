@@ -28,3 +28,6 @@ Date,Nom,Temps,État,Description,Type
 "14/09/2026","Feat(import): import basique des data et affichage","[25]","[DONE]","importe les data depuis une sources fix possibilité de réécrire sur les date"
 "14/09/2026","chor(Data): ajout de data pour mes tests d'importation","[10]","[DONE]",""
 "14/09/2026","Feat(data): sauvegarde et importation","[20]","[DONE]","sauvegarde dans SQLite les datas. Importation: ajout les data ne fait pas de chevauchement"
+"14/09/2026","feat(compart): ajout d'un bouton pour changer ajuster l'echelle","[40]","[DONE]","vu les écart que j'ai entre mes devise j'ai décider d'ajouter un bouton pour comparé. le consepete mettre tous en Base 100 pour une meuilleur comparaison. Un hover sur les points indique la valeur de base"
+"14/09/2026","Feat(Test): ajout de teste unitaire basiques","[20]","[WIP]","Structure basique tests basique pas forcement fonctionnel"
+"14/09/2026","doc(Prof): discution","[25]","[DONE]",""
