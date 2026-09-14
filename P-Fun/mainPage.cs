@@ -6,9 +6,10 @@ namespace P_Fun
 {
     public partial class mainPage : Form
     {
+        private readonly SeriesDatabase _database = new(DefaultDatabaseFile());
         private readonly List<PriceSeries> _importedSeries = [];
         private readonly List<string> _skippedFiles = [];
-        private string _importedFolder = string.Empty;
+        private string _dataSource = string.Empty;
         private Label? _renderLabel;
 
         public mainPage()
@@ -16,8 +17,45 @@ namespace P_Fun
             InitializeComponent();
             ConfigurePlot();
 
-            // Au démarrage on charge directement le dossier "data" du projet.
-            ImportJsonFolder(DefaultDataFolder(), notify: false);
+            LoadStoredSeries();
+        }
+
+        /// <summary>
+        /// Au premier lancement la base est vide : on l'amorce avec les JSON du
+        /// dossier "data" du projet. Ensuite on lit uniquement la base, donc le
+        /// démarrage ne dépend plus des fichiers JSON.
+        /// </summary>
+        private void LoadStoredSeries()
+        {
+            try
+            {
+                if (_database.IsEmpty())
+                {
+                    MergeReport seed = _database.ImportFolder(DefaultDataFolder());
+                    _skippedFiles.Clear();
+                    _skippedFiles.AddRange(seed.SkippedFiles);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Base de données inaccessible", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            ReadSeriesFromDatabase();
+        }
+
+        /// <summary>
+        /// Recharge toutes les séries depuis la base SQLite et redessine le
+        /// graphique. C'est la seule source de données après le premier import.
+        /// </summary>
+        private void ReadSeriesFromDatabase()
+        {
+            _importedSeries.Clear();
+            _importedSeries.AddRange(_database.LoadSeries());
+            _dataSource = Path.GetFileName(_database.DatabasePath);
+
+            BuildSidePanel();
+            PlotImportedSeries();
         }
 
         /// <summary>
@@ -60,6 +98,7 @@ namespace P_Fun
             int top = 20 + checkBoxes.Count * 30;
             BuildImportButton(top);
             BuildStatusLabel(top + 40);
+            BuildDatabaseLabel(top + 115);
         }
 
         private void BuildImportButton(int top)
@@ -81,13 +120,45 @@ namespace P_Fun
                 Location = new Point(20, top),
                 Size = new Size(165, 70),
                 Text = _importedSeries.Count == 0
-                    ? "Aucune donnée chargée."
-                    : $"Séries importées : {string.Join(", ", _importedSeries.Select(series => series.Name))}" +
+                    ? "Aucune donnée en base."
+                    : $"Séries en base : {string.Join(", ", _importedSeries.Select(series => series.Name))}" +
                       (_skippedFiles.Count == 0
                           ? string.Empty
                           : $"{Environment.NewLine}{_skippedFiles.Count} fichier(s) ignoré(s)"),
             };
             sidePanel.Controls.Add(statusLabel);
+        }
+
+        /// <summary>
+        /// Informations sur la base SQLite : son nom, le nombre de bougies
+        /// qu'elle contient et la place qu'elle occupe sur le disque.
+        /// </summary>
+        private void BuildDatabaseLabel(int top)
+        {
+            var databaseLabel = new Label
+            {
+                Location = new Point(20, top),
+                Size = new Size(165, 45),
+                Text = $"Base : {Path.GetFileName(_database.DatabasePath)}{Environment.NewLine}" +
+                       $"{_database.CandleCount()} bougies — {DatabaseSize()}",
+            };
+            sidePanel.Controls.Add(databaseLabel);
+        }
+
+        /// <summary>Taille du fichier de base, arrondie en unité lisible (« 144 Ko »).</summary>
+        private string DatabaseSize()
+        {
+            string[] units = ["o", "Ko", "Mo", "Go"];
+            double size = new FileInfo(_database.DatabasePath).Length;
+
+            int unit = 0;
+            while (size >= 1024 && unit < units.Length - 1)
+            {
+                size /= 1024;
+                unit++;
+            }
+
+            return $"{size:0.#} {units[unit]}";
         }
 
         private void ImportSeriesFromJsonFolder()
@@ -108,15 +179,16 @@ namespace P_Fun
         }
 
         /// <summary>
-        /// Charge toutes les séries du dossier et les trace. Quand l'import est lancé
-        /// automatiquement au démarrage, on n'affiche pas de popup pour ne pas gêner l'utilisateur.
+        /// Fusionne le dossier dans la base SQLite : les bougies qui chevauchent
+        /// des données déjà stockées sont remplacées, les autres sont ajoutées.
+        /// Le graphique est ensuite relu depuis la base.
         /// </summary>
         private void ImportJsonFolder(string folderPath, bool notify)
         {
-            JsonImportResult result;
+            MergeReport report;
             try
             {
-                result = JsonFolderImporter.ImportFolder(folderPath);
+                report = _database.ImportFolder(folderPath);
             }
             catch (Exception ex)
             {
@@ -125,46 +197,41 @@ namespace P_Fun
                     MessageBox.Show(this, ex.Message, "Import impossible", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
-                BuildSidePanel();
-                PlotImportedSeries();
+                ReadSeriesFromDatabase();
                 return;
             }
 
-            if (result.Series.Count == 0)
-            {
-                if (notify)
-                {
-                    string detail = result.SkippedFiles.Count == 0
-                        ? "Ce dossier ne contient aucun fichier .json."
-                        : $"Fichiers ignorés :{Environment.NewLine}{string.Join(Environment.NewLine, result.SkippedFiles)}";
-
-                    MessageBox.Show(this, detail, "Aucune donnée importée", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-
-                BuildSidePanel();
-                PlotImportedSeries();
-                return;
-            }
-
-            _importedSeries.Clear();
-            _importedSeries.AddRange(result.Series);
-            _importedFolder = folderPath;
             _skippedFiles.Clear();
-            _skippedFiles.AddRange(result.SkippedFiles);
+            _skippedFiles.AddRange(report.SkippedFiles);
+            ReadSeriesFromDatabase();
 
-            BuildSidePanel();
-            PlotImportedSeries();
-
-            if (notify && result.SkippedFiles.Count > 0)
+            if (!notify)
             {
-                MessageBox.Show(
-                    this,
-                    $"Séries importées : {result.Series.Count}.{Environment.NewLine}" +
-                    $"{Environment.NewLine}Fichiers ignorés :{Environment.NewLine}{string.Join(Environment.NewLine, result.SkippedFiles)}",
-                    "Import terminé avec des fichiers ignorés",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                return;
             }
+
+            if (report.Total == 0)
+            {
+                string detail = report.SkippedFiles.Count == 0
+                    ? "Ce dossier ne contient aucun fichier .json."
+                    : $"Fichiers ignorés :{Environment.NewLine}{string.Join(Environment.NewLine, report.SkippedFiles)}";
+
+                MessageBox.Show(this, detail, "Aucune donnée importée", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string ignored = report.SkippedFiles.Count == 0
+                ? string.Empty
+                : $"{Environment.NewLine}{Environment.NewLine}Fichiers ignorés :{Environment.NewLine}{string.Join(Environment.NewLine, report.SkippedFiles)}";
+
+            MessageBox.Show(
+                this,
+                $"{report.Added} bougie(s) ajoutée(s).{Environment.NewLine}" +
+                $"{report.Overwritten} bougie(s) déjà présente(s) mise(s) à jour.{Environment.NewLine}" +
+                $"{Environment.NewLine}Total en base : {_database.CandleCount()} bougies.{ignored}",
+                "Import terminé",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void PlotImportedSeries()
@@ -186,10 +253,10 @@ namespace P_Fun
             }
 
             plotPanel.Plot.Title(series.Count == 0
-                ? (string.IsNullOrEmpty(_importedFolder)
+                ? (string.IsNullOrEmpty(_dataSource)
                     ? "Importez un dossier JSON pour tracer les données"
-                    : $"Aucune série sélectionnée (dossier : {_importedFolder})")
-                : $"{series.Count}/{_importedSeries.Count} série(s) tracée(s) — {_importedFolder}");
+                    : $"Aucune série sélectionnée ({_dataSource})")
+                : $"{series.Count}/{_importedSeries.Count} série(s) tracée(s) — {_dataSource}");
 
             plotPanel.Plot.Axes.AutoScale();
             HideBenchmark();
@@ -229,6 +296,9 @@ namespace P_Fun
             string projectData = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "data"));
             return Directory.Exists(projectData) ? projectData : Environment.CurrentDirectory;
         }
+
+        /// <summary>La base SQLite, stockée à côté des JSON dans le dossier "data".</summary>
+        private static string DefaultDatabaseFile() => Path.Combine(DefaultDataFolder(), "p-fun.db");
 
         /// <summary>Les séries importées dont la case à cocher est cochée.</summary>
         private IEnumerable<PriceSeries> SelectedImportedSeries
