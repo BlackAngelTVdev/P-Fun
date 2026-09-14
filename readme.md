@@ -22,7 +22,8 @@ Coming soon
 | ![.NET](https://img.shields.io/badge/.NET-512BD4?style=flat-square&logo=dotnet&logoColor=white) | Runtime / Framework |
 | ![WinForms](https://img.shields.io/badge/WinForms-512BD4?style=flat-square) | Interface graphique (desktop) |
 | ![ScottPlot](https://img.shields.io/badge/ScottPlot-FF6600?style=flat-square) | Graphiques / Tracés |
-| ![JSON](https://img.shields.io/badge/JSON-000000?style=flat-square) | Stockage des données |
+| ![JSON](https://img.shields.io/badge/JSON-000000?style=flat-square) | Import des données |
+| ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white) | Stockage local des séries |
 
 ## 🚀 Installation & Lancement
 Coming soon
@@ -32,7 +33,7 @@ Coming soon
 2. Les données crypto sont récupérées depuis l'API Binance.
 3. Les graphiques s'affichent automatiquement dans l'interface.
 
-Les données sont sauvegardées au format JSON dans le répertoire du projet.
+Les données sont stockées dans une base SQLite locale (`data/p-fun.db`). Au premier lancement, la base est créée à partir des fichiers JSON du dossier `data`, puis l'application lit uniquement la base. Importer un dossier JSON ajoute les nouvelles bougies et remplace celles qui chevauchent des données déjà stockées.
 
 ## 🤝 Contribution
 1. Forkez le projet
