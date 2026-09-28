@@ -57,10 +57,17 @@ TestResult.xml
 nunit-*.xml
 
 # Export PDF
-./doc/export-pdf.sh
-./doc/style.css
-./doc/rapport.pdf
+/doc/export-pdf.sh
+/doc/style.css
+/doc/rapport.pdf
 .freebuff
+
+# Journal de travail local (non versionné)
+CHANGELOG.local.md
+
+# Données récupérées depuis l'API Binance (volumineuses : ~28 Mo pour 14 jours en 1 minute)
+# Les régénérer avec : python scripts/fetch_binance_data.py --start 2026-09-14
+/data/*.json
 
 # Visual Studio user-specific
 .vs/
