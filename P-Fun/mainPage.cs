@@ -52,15 +52,17 @@ namespace P_Fun
         }
 
         /// <summary>
-        /// Au premier lancement la base est vide : on l'amorce avec les JSON du
-        /// dossier "data" du projet. Ensuite on lit uniquement la base, donc le
-        /// démarrage ne dépend plus des fichiers JSON.
+        /// Charge les données affichées. Le dossier "data" est fusionné dans la
+        /// base quand il apporte quelque chose : base vide (premier lancement) ou
+        /// JSON modifié depuis le dernier import. La fusion écrase les valeurs
+        /// déjà stockées, puis tout est relu depuis la base, seule source
+        /// consultée pendant la session.
         /// </summary>
         private void LoadStoredSeries()
         {
             try
             {
-                if (_database.IsEmpty())
+                if (DataFolderPolicy.ShouldImport(DefaultDataFolder(), _database.DatabasePath, _database.IsEmpty()))
                 {
                     MergeReport seed = _database.ImportFolder(DefaultDataFolder());
                     _skippedFiles.Clear();
@@ -415,20 +417,42 @@ namespace P_Fun
             PriceSeries plotted = _normalizeToBase100 ? priceSeries.NormalizedToBase100() : priceSeries;
             double[] xs = [.. plotted.Timestamps.Select(ToOADate)];
 
-            // SignalXY est la plottable prévue pour les gros volumes : elle ne
-            // trace que la partie visible, sans marqueur. Avec Scatter, chaque
-            // point recevait un marqueur à chaque rendu (environ 100 000
-            // marqueurs pour 5 séries de 20 000 bougies), ce qui rendait le
-            // zoom et le déplacement poussifs.
-            var signal = plotPanel.Plot.Add.SignalXY(xs, plotted.Closes);
-            signal.LegendText = priceSeries.LegendLabel(_normalizeToBase100);
+            // Un trait par bloc contigu : un trou de données n'est jamais
+            // traversé par une ligne, qui laisserait croire à une évolution
+            // régulière là où il n'y a aucune bougie.
+            List<SeriesSegment> blocks = [.. SeriesSegmentation.SplitOnGaps(plotted.Timestamps)];
+
+            // Tracer est un effet de bord par bloc, que LINQ n'exprime pas : le
+            // premier bloc porte le libellé de légende, les suivants non (sinon
+            // un trou ferait apparaître la même série plusieurs fois).
+            blocks.ForEach(block => AddBlock(priceSeries, xs, plotted.Closes, block, block.Start == 0));
+
+            return new PlottedSeries(priceSeries, xs, plotted.Closes);
+        }
+
+        /// <summary>
+        /// Trace un bloc de la série. SignalXY est la plottable prévue pour les
+        /// gros volumes : elle ne trace que la partie visible, sans marqueur.
+        /// Avec Scatter, chaque point recevait un marqueur à chaque rendu
+        /// (environ 100 000 marqueurs pour 5 séries de 20 000 bougies), ce qui
+        /// rendait le zoom et le déplacement poussifs.
+        /// Les bornes sont recopiées dans des tableaux à part : SignalXY ne
+        /// travaille que sur la plage qu'on lui donne.
+        /// </summary>
+        private void AddBlock(
+            PriceSeries priceSeries,
+            double[] xs,
+            double[] values,
+            SeriesSegment block,
+            bool withLegend)
+        {
+            var signal = plotPanel.Plot.Add.SignalXY(xs[block.Start..block.End], values[block.Start..block.End]);
+            signal.LegendText = withLegend ? priceSeries.LegendLabel(_normalizeToBase100) : string.Empty;
             signal.Color = SeriesColor(priceSeries);
 
             // Un trait légèrement plus épais : la ligne reste bien lisible
             // quand les 5 séries se superposent, sans devenir pâteuse.
             signal.LineWidth = 1.5f;
-
-            return new PlottedSeries(priceSeries, xs, plotted.Closes);
         }
 
         /// <summary>
