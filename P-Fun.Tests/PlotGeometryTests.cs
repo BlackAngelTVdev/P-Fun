@@ -108,8 +108,13 @@ namespace P_Fun.Tests
             Assert.Equal(index, found!.Index);
         }
 
-        [Fact]
-        public void FindNearest_AuxDeuxBoutsDeLaSerie_RetrouveLePointVise()
+        // Les deux bouts de la série en un seul test paramétré : le premier et le
+        // dernier point sont ceux où la fenêtre de recherche par dichotomie peut
+        // sortir des bornes.
+        [Theory]
+        [InlineData(0)]
+        [InlineData(19_999)]
+        public void FindNearest_AuxBoutsDeLaSerie_RetrouveLePointVise(int index)
         {
             double[] values = [.. Enumerable.Range(0, 20_000).Select(index => 100 + (index % 500))];
             double[] xs = [.. Enumerable.Range(0, 20_000).Select(index => (double)index)];
@@ -118,14 +123,11 @@ namespace P_Fun.Tests
             ChartArea area = new(Left: 0, Bottom: 200, Width: 1000, Height: 200);
             AxisRange range = new(XMin: 0, XMax: 20_000, YMin: 0, YMax: 1000);
 
-            foreach (int index in new[] { 0, 19_999 })
-            {
-                PixelPoint target = area.ToPixel(range, xs[index], values[index]);
-                HoveredPoint? found = HoverSearch.FindNearest([plot], area, range, target.X, target.Y, radius: 5);
+            PixelPoint target = area.ToPixel(range, xs[index], values[index]);
+            HoveredPoint? found = HoverSearch.FindNearest([plot], area, range, target.X, target.Y, radius: 5);
 
-                Assert.NotNull(found);
-                Assert.Equal(index, found!.Index);
-            }
+            Assert.NotNull(found);
+            Assert.Equal(index, found!.Index);
         }
 
         private static PlottedSeries Plot(string name, double[] xs, double[] values) =>

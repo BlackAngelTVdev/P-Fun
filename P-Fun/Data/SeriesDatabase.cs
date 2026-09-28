@@ -104,18 +104,18 @@ namespace P_Fun.Data
             using SqliteConnection connection = OpenConnection();
             using SqliteTransaction transaction = connection.BeginTransaction();
 
-            int added = 0;
-            int overwritten = 0;
-
-            foreach (PriceSeries series in import.Series)
-            {
-                (int seriesAdded, int seriesOverwritten) = Merge(connection, transaction, series);
-                added += seriesAdded;
-                overwritten += seriesOverwritten;
-            }
+            // Merge écrit ses lignes au fil de la projection : on matérialise
+            // donc la liste pour forcer les écritures à avoir lieu à l'intérieur
+            // de la transaction, avant le Commit.
+            List<(int Added, int Overwritten)> merges = [.. import.Series
+                .Select(series => Merge(connection, transaction, series))];
 
             transaction.Commit();
-            return new MergeReport(added, overwritten, import.SkippedFiles);
+
+            return new MergeReport(
+                merges.Sum(merge => merge.Added),
+                merges.Sum(merge => merge.Overwritten),
+                import.SkippedFiles);
         }
 
         private static (int Added, int Overwritten) Merge(
@@ -134,17 +134,22 @@ namespace P_Fun.Data
             SqliteParameter close = command.Parameters.Add("$close", SqliteType.Real);
             symbol.Value = series.Name;
 
-            int overwritten = 0;
+            List<(long OpenTime, double Close)> candles = [.. series.Timestamps
+                .Zip(series.Closes, (openTime, value) => (OpenTime: (long)openTime, Close: value))];
 
-            foreach ((double timestamp, double value) in series.Timestamps.Zip(series.Closes))
+            // Écrire une ligne n'est pas produire une valeur : c'est le seul
+            // endroit du noyau où il reste une action par élément. ForEach est
+            // l'équivalent LINQ le plus proche, aucun opérateur ne couvrant
+            // l'exécution d'un effet de bord.
+            candles.ForEach(candle =>
             {
-                long storedTime = (long)timestamp;
-                overwritten += stored.Contains(storedTime) ? 1 : 0;
-
-                openTime.Value = storedTime;
-                close.Value = value;
+                openTime.Value = candle.OpenTime;
+                close.Value = candle.Close;
                 command.ExecuteNonQuery();
-            }
+            });
+
+            // Une bougie déjà stockée est écrasée par la valeur importée.
+            int overwritten = candles.Count(candle => stored.Contains(candle.OpenTime));
 
             return (series.Closes.Length - overwritten, overwritten);
         }

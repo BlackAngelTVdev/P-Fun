@@ -208,15 +208,12 @@ namespace P_Fun
         {
             sidePanel.Controls.Clear();
 
-            List<CheckBox> checkBoxes = _importedSeries
-                .Select((series, index) => series.ToCheckBox(index))
-                .ToList();
+            // Chaque case arrive déjà branchée sur le redessin : le panneau n'a
+            // plus qu'à les accueillir, aucune relecture des contrôles.
+            List<CheckBox> checkBoxes = [.. _importedSeries
+                .Select((series, index) => series.ToCheckBox(index, PlotImportedSeries))];
 
-            foreach (CheckBox checkBox in checkBoxes)
-            {
-                checkBox.CheckedChanged += (_, _) => PlotImportedSeries();
-                sidePanel.Controls.Add(checkBox);
-            }
+            sidePanel.Controls.AddRange([.. checkBoxes]);
 
             int top = 20 + checkBoxes.Count * 30;
             BuildImportButton(top);
@@ -384,26 +381,7 @@ namespace P_Fun
 
             List<PriceSeries> series = [.. SelectedImportedSeries];
 
-            foreach (PriceSeries priceSeries in series)
-            {
-                PriceSeries plotted = _normalizeToBase100 ? priceSeries.NormalizedToBase100() : priceSeries;
-                double[] xs = plotted.Timestamps.Select(ToOADate).ToArray();
-
-                // SignalXY est la plottable prévue pour les gros volumes : elle ne
-                // trace que la partie visible, sans marqueur. Avec Scatter, chaque
-                // point recevait un marqueur à chaque rendu (environ 100 000
-                // marqueurs pour 5 séries de 20 000 bougies), ce qui rendait le
-                // zoom et le déplacement poussifs.
-                var signal = plotPanel.Plot.Add.SignalXY(xs, plotted.Closes);
-                signal.LegendText = priceSeries.LegendLabel(_normalizeToBase100);
-                signal.Color = SeriesColor(priceSeries);
-
-                // Un trait légèrement plus épais : la ligne reste bien lisible
-                // quand les 5 séries se superposent, sans devenir pâteuse.
-                signal.LineWidth = 1.5f;
-
-                _plottedSeries.Add(new PlottedSeries(priceSeries, xs, plotted.Closes));
-            }
+            _plottedSeries.AddRange(series.Select(PlotOne));
 
             plotPanel.Plot.Axes.Left.Label.Text = _normalizeToBase100
                 ? "Indice (base 100)"
@@ -426,6 +404,31 @@ namespace P_Fun
             // Refresh() déclenche le rendu de façon synchrone : LastRender est à
             // jour dès le retour, ce dont dépend la géométrie du survol.
             plotPanel.Refresh();
+        }
+
+        /// <summary>
+        /// Trace une série et rend les points dessinés, conservés pour retrouver
+        /// la bougie survolée.
+        /// </summary>
+        private PlottedSeries PlotOne(PriceSeries priceSeries)
+        {
+            PriceSeries plotted = _normalizeToBase100 ? priceSeries.NormalizedToBase100() : priceSeries;
+            double[] xs = [.. plotted.Timestamps.Select(ToOADate)];
+
+            // SignalXY est la plottable prévue pour les gros volumes : elle ne
+            // trace que la partie visible, sans marqueur. Avec Scatter, chaque
+            // point recevait un marqueur à chaque rendu (environ 100 000
+            // marqueurs pour 5 séries de 20 000 bougies), ce qui rendait le
+            // zoom et le déplacement poussifs.
+            var signal = plotPanel.Plot.Add.SignalXY(xs, plotted.Closes);
+            signal.LegendText = priceSeries.LegendLabel(_normalizeToBase100);
+            signal.Color = SeriesColor(priceSeries);
+
+            // Un trait légèrement plus épais : la ligne reste bien lisible
+            // quand les 5 séries se superposent, sans devenir pâteuse.
+            signal.LineWidth = 1.5f;
+
+            return new PlottedSeries(priceSeries, xs, plotted.Closes);
         }
 
         /// <summary>

@@ -18,72 +18,62 @@ namespace P_Fun.Data
     {
         public static JsonImportResult ImportFolder(string folderPath)
         {
-            List<PriceSeries> series = [];
-            List<string> skipped = [];
-
-            string[] files = Directory.EnumerateFiles(folderPath, "*.json")
+            // Chaque fichier donne soit une série, soit une raison d'échec : on
+            // projette une fois puis on partitionne, au lieu d'accumuler dans
+            // deux listes au fil d'une boucle.
+            List<(string File, JsonImport Attempt)> attempts = [.. Directory
+                .EnumerateFiles(folderPath, "*.json")
                 .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+                .Select(file => (File: file, Attempt: TryImportFile(file)))];
 
-            foreach (string file in files)
-            {
-                PriceSeries? imported = TryImportFile(file, out string? error);
-
-                if (imported is null)
-                {
-                    skipped.Add($"{Path.GetFileName(file)} ({error})");
-                    continue;
-                }
-
-                series.Add(imported);
-            }
-
-            return new JsonImportResult(series, skipped);
+            return new JsonImportResult(
+                [.. attempts.Where(attempt => attempt.Attempt.Series is not null)
+                            .Select(attempt => attempt.Attempt.Series!)],
+                [.. attempts.Where(attempt => attempt.Attempt.Series is null)
+                            .Select(attempt => $"{Path.GetFileName(attempt.File)} ({attempt.Attempt.Error})")]);
         }
 
-        private static PriceSeries? TryImportFile(string filePath, out string? error)
+        private static JsonImport TryImportFile(string filePath)
         {
-            error = null;
-
             try
             {
                 using JsonDocument document = JsonDocument.Parse(File.ReadAllText(filePath));
 
                 if (document.RootElement.ValueKind != JsonValueKind.Array)
                 {
-                    error = "la racine du fichier n'est pas un tableau";
-                    return null;
+                    return new JsonImport(null, "la racine du fichier n'est pas un tableau");
                 }
 
-                List<double> timestamps = [];
-                List<double> closes = [];
+                (double Timestamp, double Close)[] candles = [.. document.RootElement
+                    .EnumerateArray()
+                    .Where(IsUsableCandle)
+                    .Select(candle => (Timestamp: candle[0].GetDouble(), Close: ReadClose(candle[4])))];
 
-                foreach (JsonElement candle in document.RootElement.EnumerateArray())
+                if (candles.Length == 0)
                 {
-                    if (candle.ValueKind != JsonValueKind.Array || candle.GetArrayLength() < 5)
-                    {
-                        continue;
-                    }
-
-                    timestamps.Add(candle[0].GetDouble());
-                    closes.Add(ReadClose(candle[4]));
-                }
-
-                if (closes.Count == 0)
-                {
-                    error = "aucune bougie exploitable";
-                    return null;
+                    return new JsonImport(null, "aucune bougie exploitable");
                 }
 
                 string name = Path.GetFileNameWithoutExtension(filePath).ToUpperInvariant();
-                return new PriceSeries(name, [.. timestamps], [.. closes]);
+                return new JsonImport(
+                    new PriceSeries(
+                        name,
+                        [.. candles.Select(candle => candle.Timestamp)],
+                        [.. candles.Select(candle => candle.Close)]),
+                    null);
             }
             catch (Exception ex) when (ex is JsonException or IOException or FormatException or InvalidOperationException)
             {
-                error = ex.Message;
-                return null;
+                return new JsonImport(null, ex.Message);
             }
         }
+
+        /// <summary>Une bougie exploitable : un tableau d'au moins cinq valeurs (openTime, open, high, low, close).</summary>
+        private static bool IsUsableCandle(JsonElement candle) =>
+            candle.ValueKind == JsonValueKind.Array && candle.GetArrayLength() >= 5;
+
+        /// <summary>Issue de la lecture d'un fichier : la série, ou la raison de l'échec.</summary>
+        private sealed record JsonImport(PriceSeries? Series, string? Error);
 
         /// <summary>
         /// Le prix de clôture est une chaîne ("76714.00000000") mais on accepte
