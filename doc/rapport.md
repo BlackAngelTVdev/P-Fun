@@ -241,7 +241,7 @@ Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 s
 
 | Bug | Sévérité | Résolu ? |
 |:---|:---:|:---:|
-| *À compléter* | | |
+| Eloigenemnt |🟠 | ❌/✅|
 
 > **Légende des sévérités :**
 > - 🟢 Mineur
@@ -263,6 +263,7 @@ Tous les modèles du site ci-dessous tournent sur mon propre serveur de LLM, don
 |Corriger l'orthographe dans le projet|Xiaomi MiMo-2.5|
 |Débugé|DeepSeek V4.1 Flash (High)|
 |Partie performance du programme|Space Bunny Alpha (High)|
+|Test unitaires |DeepSeek V4.1 Flash (High) |
 
 
 ---
@@ -271,21 +272,18 @@ Tous les modèles du site ci-dessous tournent sur mon propre serveur de LLM, don
 
 ### 6.1 Planning respecté ?
 
-<!-- Comparer le planning initial avec ce qui a réellement été fait -->
+Actuellement (28.09.2026) la planification initaial n'est pas totalement respecter. Car il y a des étapes que je n'ai pas fait dans l'ordre que ma plannification le montrais.
 
-*À compléter.*
+
 
 ### 6.2 Méthodologie
 
-<!-- Méthode utilisée (agile, cascade, etc.), outils de suivi -->
+J'ai utiliser l'agilité avec scrum. Même pour un projet solo je trouve ça pas mal de farie la partie "debrif" au debut ca permet de voir ou j'en suis avant de me jeter betement dans le travaille.
 
-*À compléter.*
 
 ### 6.3 Problèmes rencontrés
 
-<!-- Difficultés techniques, organisationnelles, et comment elles ont été surmontées -->
-
-*À compléter.*
+Le plus gros problème que j'ai rencontré c'est le fait que mes differantes séries, les valeurs étais vachement éloignées les une des autres.
 
 ---
 
@@ -307,4 +305,3 @@ Tous les modèles du site ci-dessous tournent sur mon propre serveur de LLM, don
 
 ---
 
-> *Ce rapport sera complété au fil de l'avancement du projet.*

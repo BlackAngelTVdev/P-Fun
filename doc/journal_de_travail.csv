@@ -36,7 +36,11 @@ Date,Nom,Temps,État,Description,Type
 
 "28/09/2026","feat(script): script qui récupère directement sur l'api","[35]","[DONE]",""
 "28/09/2026","chor(Repo): untrack json","[10]","[DONE]","Pourquoi j'ai fait ça: les Json peuvent être généré avec le script du commit d'avant l'il n'y a donc plus d'utilité."
-"28/09/2026","chor(repo): modification du gitignore","[1]","[DONE]",""
+"28/09/2026","chor(repo): modification du gitignore","[?]","[?]",""
 "28/09/2026","update(db): up to 190000 data","[5]","[DONE]",""
-"28/09/2026","perf(plot): SignalXY, survol fenêtré et couleurs fixes par série","[40]","[DONE]","Le rendu devenait poussif avec les 39 000 bougies par série : Scatter redessinait un marqueur par point à chaque zoom. Passage à SignalXY, qui ne trace que la partie visible, et recherche du point survolé limitée à une fenêtre trouvée par dichotomie au lieu de reprojeter toute la série. Les couleurs viennent maintenant d'une palette indexée sur la position de la série, pour que masquer une courbe ne recolore plus les autres. 🤖 Generated with Codebuff Co-Authored-By: Codebuff <noreply@codebuff.com>"
+"28/09/2026","perf(plot): SignalXY, survol fenêtré et couleurs fixes par série","[?]","[?]","Le rendu devenait poussif avec les 39 000 bougies par série : Scatter redessinait un marqueur par point à chaque zoom. Passage à SignalXY, qui ne trace que la partie visible, et recherche du point survolé limitée à une fenêtre trouvée par dichotomie au lieu de reprojeter toute la série. Les couleurs viennent maintenant d'une palette indexée sur la position de la série, pour que masquer une courbe ne recolore plus les autres. 🤖 Generated with Codebuff Co-Authored-By: Codebuff <noreply@codebuff.com>"
 "28/09/2026","Merge branch 'main' of https://github.com/BlackAngelTVdev/P-Fun","[?]","[?]",""
+"28/09/2026","doc(MAJ): mise a jour du rapport et du JNR","[10]","[DONE]",""
+"28/09/2026","refactor(all): verification linq","[30]","[DONE]",""
+"28/09/2026","fix(data): fait que ca écrase les encien si chevauchement","[25]","[DONE]",""
+"28/09/2026","test(unit): ajout 2 tests","[25]","[DONE]",""
