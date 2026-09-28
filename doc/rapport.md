@@ -194,13 +194,13 @@ On travaille en agile, avec des sprints d'une semaine. À la fin de chaque sprin
 
 | Sprint | Période | Tâches | Livrable | Statut |
 |:---:|:---|:---|:---|:---:|
-| 0 | 24 août | Analyse du besoin, user stories, maquettes | CDC fonctionnel validé | ⬜ |
-| 1 | 31 août | Projet Git, structure C#, premier GUI WinForms | Fenêtre principale avec un graphique vide | ⬜ |
-| 2 | 7 septembre | Connexion à l'API Binance, parsing des données | Affichage des premières vraies données | ⬜ |
-| 3 | 14 septembre | Stockage local JSON, import CSV/JSON | Persistance des données | ⬜ |
-| 4 | 21 septembre | Multi-séries, sélection des séries, zoom | Graphique multi-courbes interactif | ⬜ |
-| 5 | 28 septembre | Refactoring LINQ, extensions C# | Code conforme aux contraintes | ⬜ |
-| 6 | 5 octobre | Tests unitaires (≥ 3), corrections de bugs | Rapport de tests | ⬜ |
+| 0 | 24 août | Analyse du besoin, user stories, maquettes | CDC fonctionnel validé | ✅  |
+| 1 | 31 août | Projet Git, structure C#, premier GUI WinForms | Fenêtre principale avec un graphique vide | ✅  |
+| 2 | 7 septembre | Connexion à l'API Binance, parsing des données | Affichage des premières vraies données | ⬜  |
+| 3 | 14 septembre | Stockage local JSON, import CSV/JSON | Persistance des données | ✅  |
+| 4 | 21 septembre | Multi-séries, sélection des séries, zoom | Graphique multi-courbes interactif | ✅ |
+| 5 | 28 septembre | Refactoring LINQ, extensions C# | Code conforme aux contraintes | 🟡 |
+| 6 | 5 octobre | Tests unitaires (≥ 3), corrections de bugs | Rapport de tests | ✅ |
 | 7 | 12 octobre | Finitions, UI, documentation | Version candidate | ⬜ |
 | 8 | 19–30 octobre | Rapport final, bilan, release GitHub | Livraison finale | ⬜ |
 
@@ -256,9 +256,14 @@ Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 s
 
 ## 5. Usage de l'intelligence artificielle dans le projet
 
+Tous les modèles du site ci-dessous tournent sur mon propre serveur de LLM, donc aucune donnée n'est utilisée pour de l'entraînement.
+
 |utilisation|Model|
 |:---|---|
-|L'intelligence artificielle m'a été utile pour corriger l'orthographe dans le projet|Xiaomi MiMo-2.5|
+|Corriger l'orthographe dans le projet|Xiaomi MiMo-2.5|
+|Débugé|DeepSeek V4.1 Flash (High)|
+|Partie performance du programme|Space Bunny Alpha (High)|
+
 
 ---
 
