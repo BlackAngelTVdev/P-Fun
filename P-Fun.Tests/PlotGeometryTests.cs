@@ -87,6 +87,47 @@ namespace P_Fun.Tests
             Assert.Null(HoverSearch.FindNearest([plot], Area, Range, pixelX: -5, pixelY: 100, radius: 12));
         }
 
+        [Fact]
+        public void FindNearest_SurUneGrandeSerie_RetrouveLePointVise()
+        {
+            // 20 000 points : la taille des séries réelles en 1 minute. La recherche
+            // doit rester exacte malgré la fenêtre réduite autour du curseur.
+            double[] values = [.. Enumerable.Range(0, 20_000).Select(index => 100 + (index % 500))];
+            double[] xs = [.. Enumerable.Range(0, 20_000).Select(index => (double)index)];
+            PlottedSeries plot = new(TestSeries.Create("BTC", values), xs, values);
+
+            ChartArea area = new(Left: 0, Bottom: 200, Width: 1000, Height: 200);
+            AxisRange range = new(XMin: 0, XMax: 20_000, YMin: 0, YMax: 1000);
+
+            const int index = 12_345;
+            PixelPoint target = area.ToPixel(range, xs[index], values[index]);
+
+            HoveredPoint? found = HoverSearch.FindNearest([plot], area, range, target.X, target.Y, radius: 5);
+
+            Assert.NotNull(found);
+            Assert.Equal(index, found!.Index);
+        }
+
+        [Fact]
+        public void FindNearest_AuxDeuxBoutsDeLaSerie_RetrouveLePointVise()
+        {
+            double[] values = [.. Enumerable.Range(0, 20_000).Select(index => 100 + (index % 500))];
+            double[] xs = [.. Enumerable.Range(0, 20_000).Select(index => (double)index)];
+            PlottedSeries plot = new(TestSeries.Create("BTC", values), xs, values);
+
+            ChartArea area = new(Left: 0, Bottom: 200, Width: 1000, Height: 200);
+            AxisRange range = new(XMin: 0, XMax: 20_000, YMin: 0, YMax: 1000);
+
+            foreach (int index in new[] { 0, 19_999 })
+            {
+                PixelPoint target = area.ToPixel(range, xs[index], values[index]);
+                HoveredPoint? found = HoverSearch.FindNearest([plot], area, range, target.X, target.Y, radius: 5);
+
+                Assert.NotNull(found);
+                Assert.Equal(index, found!.Index);
+            }
+        }
+
         private static PlottedSeries Plot(string name, double[] xs, double[] values) =>
             new(TestSeries.Create(name, values), xs, values);
     }

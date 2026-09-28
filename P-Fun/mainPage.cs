@@ -27,6 +27,13 @@ namespace P_Fun
         // tracée dans son prix réel, sinon une série à 60 000 écrase tout le reste.
         private bool _normalizeToBase100 = true;
 
+        /// <summary>
+        /// Palette des séries. Les couleurs sont attribuées d'après la position de
+        /// la série dans la liste complète, jamais d'après l'ordre de tracé :
+        /// masquer une série ne recolore donc pas les autres.
+        /// </summary>
+        private static readonly ScottPlot.IPalette SeriesPalette = new ScottPlot.Palettes.Category10();
+
         public mainPage()
         {
             InitializeComponent();
@@ -381,8 +388,19 @@ namespace P_Fun
             {
                 PriceSeries plotted = _normalizeToBase100 ? priceSeries.NormalizedToBase100() : priceSeries;
                 double[] xs = plotted.Timestamps.Select(ToOADate).ToArray();
-                var scatter = plotPanel.Plot.Add.Scatter(xs, plotted.Closes);
-                scatter.LegendText = priceSeries.LegendLabel(_normalizeToBase100);
+
+                // SignalXY est la plottable prévue pour les gros volumes : elle ne
+                // trace que la partie visible, sans marqueur. Avec Scatter, chaque
+                // point recevait un marqueur à chaque rendu (environ 100 000
+                // marqueurs pour 5 séries de 20 000 bougies), ce qui rendait le
+                // zoom et le déplacement poussifs.
+                var signal = plotPanel.Plot.Add.SignalXY(xs, plotted.Closes);
+                signal.LegendText = priceSeries.LegendLabel(_normalizeToBase100);
+                signal.Color = SeriesColor(priceSeries);
+
+                // Un trait légèrement plus épais : la ligne reste bien lisible
+                // quand les 5 séries se superposent, sans devenir pâteuse.
+                signal.LineWidth = 1.5f;
 
                 _plottedSeries.Add(new PlottedSeries(priceSeries, xs, plotted.Closes));
             }
@@ -408,6 +426,16 @@ namespace P_Fun
             // Refresh() déclenche le rendu de façon synchrone : LastRender est à
             // jour dès le retour, ce dont dépend la géométrie du survol.
             plotPanel.Refresh();
+        }
+
+        /// <summary>
+        /// Couleur fixe d'une série, la même à chaque rendu quel que soit
+        /// l'ensemble des séries cochées.
+        /// </summary>
+        private ScottPlot.Color SeriesColor(PriceSeries series)
+        {
+            int index = _importedSeries.IndexOf(series);
+            return SeriesPalette.GetColor(index < 0 ? 0 : index);
         }
 
         /// <summary>ScottPlot trace les dates sous forme de double OADate, pas en millisecondes Unix.</summary>

@@ -32,3 +32,9 @@ Date,Nom,Temps,État,Description,Type
 "14/09/2026","Feat(Test): ajout de teste unitaire basiques","[20]","[WIP]","Structure basique tests basique pas forcement fonctionnel"
 "14/09/2026","doc(Prof): discution","[25]","[DONE]",""
 "14/09/2026","refactor(ALL): sortire du mainPage.cs le code","[22]","[WIP]",""
+"14/09/2026","Chor(JNR): mise a jour","[2]","[DONE]",""
+
+"28/09/2026","feat(script): script qui récupère directement sur l'api","[35]","[DONE]",""
+"28/09/2026","chor(Repo): untrack json","[10]","[DONE]","Pourquoi j'ai fait ça: les Json peuvent être généré avec le script du commit d'avant l'il n'y a donc plus d'utilité."
+"28/09/2026","chor(repo): modification du gitignore","[?]","[?]",""
+"28/09/2026","update(db): up to 190000 data","[5]","[DONE]",""
