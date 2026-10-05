@@ -230,18 +230,35 @@ Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 s
 <!-- Stratégie de tests, résultats, couverture, bugs trouvés et corrigés -->
 
 ### 4.1 Stratégie de tests
+Un test = une seule vérification. J'utilise xUnit dans un projet dédié (P-Fun.Tests). Mes noms de tests parlent d'eux-mêmes (ex: ImportFolder_IgnoreLesFichiersIllisibles ou ShouldImport_BasePlusRecenteQueTousLesJson_NeRelitRien), donc si un truc plante, je sais tout de suite quoi sans ouvrir le code.
 
-*À compléter.*
+Délier la logique de la UI. J'ai sorti toute la logique dans Core et Data. Rien à voir avec WinForms ou ScottPlot. Calculer une base 100 ou découper des données se fait à la volée sans ouvrir d'interface, ce qui rend les tests ultrarapides.
+
+Zéro donnée réelle touchée. Les tests tournent dans des dossiers temporaires générés par GUID et nettoyés dans la foulée. Rien ne vient polluer ou casser data/ ni la prod.
+
+Vrais fichiers plutôt que du mock. Au lieu de simuler avec des faux objets, le test écrit un petit JSON temporaire et laisse le vrai code d'importation le lire. Ça teste exactement la chaîne réelle.
+
+Même style de code partout. Le projet est contraint ? Les tests aussi. Tout est écrit en LINQ sans boucles pour garder une cohérence globale.
+
+La UI se vérifie à la main. Tester du WinForms ou du rendu graphique ScottPlot automatiquement, c'est souvent bancal et lourd. C'est le compromis : l'affichage se valide à l'œil.
 
 ### 4.2 Résultats des tests
 
-*À compléter.*
+Les tests passent tous.
+
+<img src="./img/084442.png">
 
 ### 4.3 Bugs identifiés et corrections
 
 | Bug | Sévérité | Résolu ? |
 |:---|:---:|:---:|
-| Eloigenemnt |🟠 | ❌/✅|
+| Échelles de prix incomparables (BTC à 82 948 contre EUR à 1,14) | 🔴 Critique | ✅ |
+| Le graphique saccadait au zoom | 🔴 Critique | ✅ |
+| Le nouvel import n'écrasait pas les données déjà stockées | 🔴 Critique | ✅ |
+| Le survol de la souris prenait 6 ms par mouvement | 🟠 Moyen | ✅ |
+| Les trous de données étaient reliés par un trait | 🟠 Moyen | ✅ |
+| Un fichier illisible disparaissait sans explication | 🟠 Moyen | ✅ |
+| La couleur d'une série changeait quand on en masquait une autre | 🟢 Mineur | ✅ |
 
 > **Légende des sévérités :**
 > - 🟢 Mineur
@@ -251,20 +268,24 @@ Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 s
 > **Légende des statuts :**
 > - ❌ Non résolu
 > - ✅ Résolu
-
 ---
 
 ## 5. Usage de l'intelligence artificielle dans le projet
 
-Tous les modèles du site ci-dessous tournent sur mon propre serveur de LLM, donc aucune donnée n'est utilisée pour de l'entraînement.
+| Utilisation | Modèle |
+|:---|:---|
+| Correction de l'orthographe du projet | Xiaomi MiMo-2.5 |
+| Débogage | DeepSeek V4.1 Flash (High) |
+| Partie performance du programme | Space Bunny Alpha (High) |
+| Tests unitaires | DeepSeek V4.1 Flash (High) |
 
-|utilisation|Model|
-|:---|---|
-|Corriger l'orthographe dans le projet|Xiaomi MiMo-2.5|
-|Débugé|DeepSeek V4.1 Flash (High)|
-|Partie performance du programme|Space Bunny Alpha (High)|
-|Test unitaires |DeepSeek V4.1 Flash (High) |
+Tous les modèles ci-dessus tournent sur mon propre serveur de LLM : aucune donnée du projet n'a servi à entraîner un modèle tiers.
 
+J'ai utilisé l'IA pour quatre choses : l'orthographe, le débogage, la performance et les tests. Le poste dont j'ai le plus besoin, c'est l'orthographe — je suis mauvais en français, je ne m'en sors pas avec les accords, et je fais des fautes même dans ce rapport. Je m'en sers donc comme correcteur, surtout en fin de session sur les fichiers entiers : commentaires de code, messages de commit, rapport. Je lui ai toujours demandé de corriger sans reformuler, parce qu'un rapport entièrement réécrit par une IA ne serait plus le mien.
+
+Sur le code, elle a servi de deuxième avis. Quand j'étais bloqué, elle ne m'a pas donné la réponse.
+
+Une limite que j'ai posée dès le début : les messages de commit ne doivent pas être écrits par l'IA. Si je ne sais pas expliquer un changement, c'est que je ne le comprends pas encore.
 
 ---
 
@@ -289,11 +310,51 @@ Le plus gros problème que j'ai rencontré c'est le fait que mes differantes sé
 
 ## 7. Bilan produit
 
-<!-- Ce qu'on a réellement vs ce qu'on voulait initialement -->
+### 7.1 Prévu / réalisé
 
 | Fonctionnalité | Prévue ? | Réalisée ? | Commentaire |
 |:---|:---:|:---:|:---|
-| *À compléter* | | | |
+| Affichage de 5 séries sur un même graphique (US1) | Oui |  Oui | Les 5 séries du dossier `data/` sont tracées au lancement, sur un axe temporel. |
+| Choix des séries affichées ou masquées (US2) | Oui |  Oui | Une case à cocher par série dans le panneau latéral. La couleur d'une série reste la même même si on en masque une autre. |
+| Stockage local et travail hors connexion (US3) | Oui |  Oui | Pas en JSON comme prévu au départ, mais dans une base SQLite. |
+| Import de données (US4) | Oui |  Partiel | Import de dossiers JSON uniquement. Le CSV n'a pas été fait. |
+| Flexibilité d'affichage (US5) | Oui |  Oui | Zoom et déplacement natifs de ScottPlot, plus l'ajout du mode base 100 et d'une infobulle au survol. |
+
+#### Fonctions ajoutées, non prévues initialement
+
+Ces fonctions ne sont dans aucune user story. Elles sont nées des problèmes
+rencontrés pendant le développement :
+
+| Ajout | Raison |
+|:---|:---|
+| Mode « Comparer (base 100) » | Le problème principal du projet : sans cette case, une série à 82 948 USDT écrase une série à 1,14 USDT et le graphique devient illisible. Chaque série est ramenée à 100 au lieu d'être tracée dans son prix réel. |
+| Découpage des courbes en blocs | Un trou de données ne doit pas être relié par un trait, qui laisserait croire à une évolution régulière là où il n'y a aucune bougie. Chaque bloc est donc dessiné séparément. |
+| Infobulle au survol | Affiche le prix réel de la bougie, sa date et sa variation depuis le début de la série, même quand le graphique est en base 100. |
+| Réimport automatique | Les fichiers JSON du dossier `data/` ne sont relus que s'ils sont plus récents que la base, pour ne pas relire 242 Mo de JSON à chaque lancement. |
+| Avertissement sur les fichiers ignorés | Un fichier illisible est ignoré en silence : le graphique manquerait alors une série sans explication. Un message liste les fichiers en cause. |
+| Compteur de bougies et taille de la base | Affichés dans le panneau latéral, pour savoir ce qui est réellement stocké. |
+
+
+### 7.2 Contraintes techniques
+
+| Contrainte | Respectée ? | Détail |
+|:---|:---:|:---|
+| LINQ, pas de boucle `for` | ✅ | Refactor fait en fin de projet : 7 boucles supprimées. Seul subsiste un `List.ForEach` sur l'écriture SQL, car LINQ n'exprime pas un effet de bord par élément  (commenté) |
+| Au moins 2 extensions C# | ✅ | `PriceSeriesExtensions` (base 100, variation, libellé de légende) et `SeriesExtensions` (création d'une case à cocher). |
+| WinForms | ✅ | Une fenêtre principale avec un panneau latéral et un panneau de graphique. |
+| ScottPlot | ✅ | avec le type `SignalXY` choisi pour les gros volumes. |
+| Au moins 3 tests unitaires | ✅ | 5 tests automatisés au total (`SeriesDatabaseTests`, `DataFolderPolicyTests`), tous au vert |
+
+### 7.3 Ce qui n'a pas été fait
+
+Par honnêteté vis-à-vis de ce qui était annoncé :
+
+- **L'import CSV** (US4) n'a pas été développé, seul le format JSON l'a été.
+- **L'application ne contacte pas l'API Binance** elle-même. Le téléchargement
+  passe par un script Python à lancer séparément, ce qui veut dire qu'il faut
+  ouvrir un terminal pour rafraîchir ses données.
+- **Les tests de performance** et le test de l'infobulle ne sont pas encore
+  écrits, alors que le code qui les concernée existe.
 
 ---
 
@@ -301,7 +362,7 @@ Le plus gros problème que j'ai rencontré c'est le fait que mes differantes sé
 
 <!-- Synthèse du projet, compétences acquises, perspectives d'amélioration -->
 
-*À compléter.*
+
 
 ---
 
