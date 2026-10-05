@@ -184,3 +184,73 @@ em {
 @page :first {
   margin-top: 30mm;
 }
+
+/* ============================================
+   Pagination — empêcher le texte d'être coupé
+   ============================================
+   Ces règles répondent à des coupages réellement constatés dans le PDF :
+     - un tableau se coupait en plein milieu, sans répéter son en-tête ;
+     - un bloc de code était coupé entre deux pages ;
+     - un titre se retrouvait seul en bas de page, son texte partait plus loin ;
+     - une capture d'écran trop large débordait de la page.
+
+   `break-*` est la propriété moderne. `page-break-*` est gardée derrière :
+   c'est le même comportement, mais écrit comme les moteurs le lisaient
+   auparavant. Chrome lit les deux, on garde la propriété lisible. */
+
+/* Un tableau qui se poursuit sur la page suivante doit reposer son
+   en-tête, sinon on ne sait plus ce qu'on lit. */
+thead { display: table-header-group; }
+tfoot { display: table-footer-group; }
+
+/* Une ligne ne doit jamais être coupée en deux : le texte d'une cellule
+   peut être long, mais il reste entier ou il passe à la page suivante. */
+tr { break-inside: avoid; page-break-inside: avoid; }
+
+/* Un titre ne doit jamais rester seul en bas de page : il est solidaire
+   du paragraphe ou du tableau qui suit. */
+h1, h2, h3, h4 { break-after: avoid; page-break-after: avoid; }
+h2, h3, h4 { break-inside: avoid; page-break-inside: avoid; }
+
+/* En impression, `overflow-x: auto` n'a pas de barre de défilement : le
+   texte trop long est donc purement et simplement tronqué. On replie
+   la ligne à la place. */
+pre {
+  overflow-x: visible;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Les identifiants longs (`ImportFolder_IgnoreLesFichiersIllisibles`)
+   n'ont pas d'espace où se couper : sans ceci, ils sortent de la page. */
+code { overflow-wrap: break-word; word-break: break-word; }
+
+/* Un encadré tient sur une page. */
+blockquote { break-inside: avoid; page-break-inside: avoid; }
+
+/* Une puce de liste n'est pas coupée de sa suite. */
+li { break-inside: avoid; page-break-inside: avoid; }
+
+/* Pas de paragraphe réduit à une ligne en bas et deux en haut. */
+p { orphans: 3; widows: 3; }
+
+/* Les captures d'écran : jamais plus larges que la page, jamais plus
+   hautes qu'une page, et jamais coupées en deux. Sans cette règle, une
+   image large était rognée sur le côté droit. */
+img {
+  max-width: 100%;
+  max-height: 22cm;
+  height: auto;
+  display: block;
+  margin: 12px auto;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Un tableau long doit pouvoir se poursuivre : on ne force pas
+   `break-inside: avoid` dessus, sinon il déborde d'une page.
+   En revanche un tout petit tableau ne doit pas se retrouver seul
+   en bas de page. */
+table { break-inside: auto; }
