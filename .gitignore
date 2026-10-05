@@ -69,5 +69,9 @@ CHANGELOG.local.md
 # Les régénérer avec : python scripts/fetch_binance_data.py --start 2026-09-14
 /data/*.json
 
+# Base SQLite locale (~23 Mo) : réécrite à chaque import de JSON, donc jamais versionnée.
+# L'application la crée toute seule au premier lancement à partir des fichiers JSON de data/.
+/data/*.db
+
 # Visual Studio user-specific
 .vs/
