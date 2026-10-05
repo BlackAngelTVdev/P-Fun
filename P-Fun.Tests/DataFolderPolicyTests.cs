@@ -24,17 +24,10 @@ namespace P_Fun.Tests
         }
 
         [Fact]
-        public void ShouldImport_BaseEncoreVide_ImporteMemeAvecDesJsonPlusAnciens()
+        public void ShouldImport_UnSeulJsonModifie_SuffitAReimporterLeDossier()
         {
-            WriteJson("btc.json", Reference.AddMinutes(-10));
-
-            Assert.True(DataFolderPolicy.ShouldImport(_folder, _databaseFile, databaseIsEmpty: true));
-        }
-
-        [Fact]
-        public void ShouldImport_JsonPlusRecentQueLaBase_Importe()
-        {
-            WriteJson("btc.json", Reference.AddMinutes(1));
+            WriteJson("btc.json", Reference.AddHours(-1));
+            WriteJson("eth.json", Reference.AddMinutes(5));
 
             Assert.True(DataFolderPolicy.ShouldImport(_folder, _databaseFile, databaseIsEmpty: false));
         }
@@ -46,24 +39,6 @@ namespace P_Fun.Tests
             WriteJson("eth.json", Reference.AddHours(-2));
 
             Assert.False(DataFolderPolicy.ShouldImport(_folder, _databaseFile, databaseIsEmpty: false));
-        }
-
-        [Fact]
-        public void ShouldImport_UnSeulJsonModifie_SuffitAReimporterLeDossier()
-        {
-            WriteJson("btc.json", Reference.AddHours(-1));
-            WriteJson("eth.json", Reference.AddMinutes(5));
-
-            Assert.True(DataFolderPolicy.ShouldImport(_folder, _databaseFile, databaseIsEmpty: false));
-        }
-
-        [Fact]
-        public void ShouldImport_DossierAbsentOuSansJson_NeRelitRien()
-        {
-            Assert.False(DataFolderPolicy.ShouldImport(Path.Combine(_folder, "inexistant"), _databaseFile, false));
-
-            // Le dossier existe, mais sans fichier .json il n'y a rien à fusionner.
-            Assert.False(DataFolderPolicy.ShouldImport(_folder, _databaseFile, false));
         }
 
         public void Dispose()

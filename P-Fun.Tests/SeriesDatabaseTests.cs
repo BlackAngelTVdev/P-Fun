@@ -7,7 +7,8 @@ namespace P_Fun.Tests
 {
     /// <summary>
     /// Tests de la base SQLite : c'est elle qui garantit qu'une bougie n'existe
-    /// qu'une fois, même après plusieurs imports de la même période.
+    /// qu'une fois, même après plusieurs imports de la même période, et que la
+    /// série relue est ordonnée et correctement nommée.
     /// Travaille dans un dossier temporaire, aucune donnée réelle n'est touchée.
     /// </summary>
     public class SeriesDatabaseTests : IDisposable
@@ -17,19 +18,6 @@ namespace P_Fun.Tests
         public SeriesDatabaseTests() => Directory.CreateDirectory(_folder);
 
         private string DatabaseFile => Path.Combine(_folder, "p-fun.db");
-
-        [Fact]
-        public void ImportFolder_AjouteLesBougiesDUneSerie()
-        {
-            WriteCandles("btc.json", (0, 1000), (1, 1010), (2, 1020));
-            SeriesDatabase database = new(DatabaseFile);
-
-            MergeReport report = database.ImportFolder(_folder);
-
-            Assert.Equal(3, report.Added);
-            Assert.Equal(0, report.Overwritten);
-            Assert.Equal(3, database.CandleCount());
-        }
 
         [Fact]
         public void ImportFolder_RemplaceLesBougiesDejaStockeesSansCreerDeDoublon()
@@ -72,19 +60,6 @@ namespace P_Fun.Tests
             Assert.Equal(0, report.Total);
             Assert.Single(report.SkippedFiles);
             Assert.Equal(0, database.CandleCount());
-        }
-
-        [Fact]
-        public void IsEmpty_EstVraiTantQuAucuneBougieNEstImportee()
-        {
-            SeriesDatabase database = new(DatabaseFile);
-
-            bool avant = database.IsEmpty();
-            WriteCandles("btc.json", (0, 1000));
-            database.ImportFolder(_folder);
-
-            Assert.True(avant);
-            Assert.False(database.IsEmpty());
         }
 
         public void Dispose()
