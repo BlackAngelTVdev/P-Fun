@@ -56,9 +56,32 @@ namespace P_Fun.Core
             AxisRange range,
             double pixelX,
             double pixelY,
+            double radius) =>
+            FindNearest(plotted, area, _ => range, pixelX, pixelY, radius);
+
+        /// <summary>
+        /// Variante pour un graphique à deux échelles verticales : chaque série
+        /// est projetée avec les limites de l'axe sur lequel elle est tracée.
+        /// </summary>
+        public static HoveredPoint? FindNearest(
+            IEnumerable<PlottedSeries> plotted,
+            ChartArea area,
+            Func<PlottedSeries, AxisRange> rangeOf,
+            double pixelX,
+            double pixelY,
             double radius)
         {
-            if (!range.IsValid || area.Width <= 0 || area.Height <= 0 || !area.Contains(pixelX, pixelY))
+            // La liste est matérialisée avant d'être parcourue : sans cela, il
+            // faudrait une première série pour lire ses limites, et le survol
+            // planterait sur un graphique vide.
+            List<PlottedSeries> series = [.. plotted];
+            if (series.Count == 0)
+            {
+                return null;
+            }
+
+            AxisRange firstRange = rangeOf(series[0]);
+            if (!firstRange.IsValid || area.Width <= 0 || area.Height <= 0 || !area.Contains(pixelX, pixelY))
             {
                 return null;
             }
@@ -70,8 +93,8 @@ namespace P_Fun.Core
             // explicite. Les candidats sont déjà limités à la fenêtre utile, sans
             // quoi il faudrait reprojeter les 20 000 points de chaque série à
             // chaque déplacement de la souris.
-            HoverCandidate? nearest = plotted
-                .SelectMany(plot => Candidates(plot, area, range, mouse, radius))
+            HoverCandidate? nearest = series
+                .SelectMany(plot => Candidates(plot, area, rangeOf(plot), mouse, radius))
                 .MinBy(candidate => candidate.Distance);
 
             return nearest is null ? null : new HoveredPoint(nearest.Plot, nearest.Index);

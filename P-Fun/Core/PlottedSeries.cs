@@ -8,7 +8,12 @@ namespace P_Fun.Core
     /// base 100 ou des prix selon le mode d'affichage. La série d'origine est
     /// conservée à côté pour pouvoir afficher les vraies valeurs.
     /// </summary>
-    public sealed record PlottedSeries(PriceSeries Series, double[] Xs, double[] Values);
+    /// <param name="OnRightAxis">
+    /// Vrai si la série est tracée sur l'axe vertical de droite. Les deux axes
+    /// n'ont pas les mêmes limites : le survol doit projeter chaque série avec
+    /// l'échelle qui lui correspond.
+    /// </param>
+    public sealed record PlottedSeries(PriceSeries Series, double[] Xs, double[] Values, bool OnRightAxis = false);
 
     /// <summary>Une bougie d'une série tracée, identifiée par sa position dans les tableaux.</summary>
     public sealed record HoveredPoint(PlottedSeries Plot, int Index);
