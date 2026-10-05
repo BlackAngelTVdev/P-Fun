@@ -50,3 +50,5 @@ Date,Nom,Temps,État,Description,Type
 "05/10/2026","doc(Rapport): Finition","[35]","[DONE]","il ne reste plus que la conclusion"
 "05/10/2026","fix(export): pagination export","[25]","[DONE]","evite de mettre le titre en bas d'une page et le contenu sur celle d'apres."
 "05/10/2026","fix(test): correction des tests et suppression","[25]","[DONE]","il y avait bcp de test inutile"
+"05/10/2026","chor(JNR): update","[2]","[DONE]",""
+"05/10/2026","chor(repo): maj readme","[35]","[DONE]","mise a jour du readme, untrak de la db"
