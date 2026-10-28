@@ -274,9 +274,6 @@ Les 9 tests automatisés passent, en moins d'une seconde (dernière exécution :
 | `HoverSearchTests` | Survol avec une ou deux échelles, série de droite, graphique vide | 4 |
 
 <img src="./img/084442.png">
-
-> Capture du 05/10 : la suite comptait alors 5 tests. Elle en compte 9 depuis l'ajout de `HoverSearchTests` et le retrait des tests peu pertinents.
-
 ### 4.3 Bugs identifiés et corrections
 
 | Bug | Sévérité | Résolu ? |
@@ -321,20 +318,7 @@ Transparence sur les traces : deux commits portent encore la co-signature de Cod
 
 ### 5.2 Trois exemples concrets
 
-#### Exemple 1 — Passer tout le code en LINQ
-
-**Demande** (28.09.2026) :
-> « Fait en sorte que tout soit LINQ, qu'il y ait 0 boucle for, que ce soit que de la programmation fonctionnelle — mais refactor pas avant d'avoir commit tout ça. »
-
-**Résultat** : l'agent a d'abord recensé 7 boucles réelles (`JsonFolderImporter` ×2, `SeriesDatabase` ×2, `mainPage` ×2, un test), puis les a remplacées par `Select`, `Where`, `AddRange` et un `[Theory]`. Build : 0 erreur ; 27 tests au vert à ce moment-là.
-
-**Corrections et décisions** :
-
-- L'agent a laissé un `List.ForEach` sur les écritures SQL. Je l'ai gardé : LINQ ne fournit aucun opérateur pour un effet de bord par élément, et le commentaire explique pourquoi. Le reste du noyau n'a plus de boucle.
-- Il avait ajouté un pied de page « Generated with… » au commit. Je l'ai retiré par `--amend` : la règle du projet est que les messages de commit sont écrits par moi.
-- J'ai relancé la recherche `for|foreach|while` sur tous les `.cs` pour vérifier qu'il ne restait qu'un commentaire, puis les tests.
-
-#### Exemple 2 — Rendre le graphique fluide
+#### Exemple 1 — Rendre le graphique fluide
 
 **Demande** (28.09.2026) :
 > « Quand les 5 séries sont cochées avec plus de 21 000 points chacune, les mouvements dans le graphique saccadent. »
@@ -347,7 +331,7 @@ Transparence sur les traces : deux commits portent encore la co-signature de Cod
 - Les mesures venaient d'un banc d'essai temporaire, supprimé après relevé ; j'ai gardé les valeurs dans le journal pour pouvoir comparer plus tard.
 - Pas de `NaN` dans les données pour représenter les trous : la documentation de ScottPlot indique que les tracés de type signal ne les gèrent pas. D'où le découpage en blocs de l'exemple 3.
 
-#### Exemple 3 — Trous de données et chevauchement d'import
+#### Exemple 2 — Trous de données et chevauchement d'import
 
 **Demande** (28.09.2026) :
 > « Fait en sorte que au lieu que si les data se chevauche ça écrive la nouvelle au lieu de garder l'ancien, et si y a un trou de data ça ne relie pas entre 2, ça fait des points séparés. »
@@ -378,7 +362,7 @@ Le planning a été suivi dans les grandes lignes : les cinq user stories ont é
 - **Stockage (sprint 3)** : prévu en JSON, réalisé en SQLite. Avec 909 770 bougies, relire et réécrire 250 Mo de JSON à chaque lancement était trop lent ; l'upsert règle en plus la question des doublons.
 - **Refactor LINQ (sprint 5)** : fait le 28/09, après les fonctionnalités, pour ne pas refactoriser du code qui allait encore changer.
 - **Tests (sprint 6)** : consolidés le 05/10. La première suite contenait des tests peu pertinents ; ils ont été supprimés puis remplacés par 9 tests ciblés.
-- **Sprint 8** : le rapport, les maquettes, le jeu d'exemple et la finalisation de `feature/double-echelle` ont été finalisés en fin de projet.
+- **Sprint 8** : le rapport, les maquettes, le jeu d'exemple et l'intégration de `feature/double-echelle` ont été finalisés en fin de projet.
 
 Une semaine d'absence (31/08) figure au journal ; elle a été rattrapée sur les semaines suivantes. Au total, le journal compte 49 entrées et 1 127 minutes, dont 180 minutes d'absence, soit environ 15 h 45 de travail effectif : l'enveloppe de 24 périodes n'a pas été dépassée.
 
@@ -421,7 +405,7 @@ rencontrés pendant le développement :
 | Ajout | Raison |
 |:---|:---|
 | Mode « Comparer (base 100) » | Le problème principal du projet : sans cette case, une série à 82 948 USDT écrase une série à 1,14 USDT et le graphique devient illisible. Chaque série est ramenée à 100 au lieu d'être tracée dans son prix réel. |
-| Double échelle verticale | En prix réel, une série à 80 000 écrase une série à 1,14. L'axe de gauche reçoit la première série cochée, l'axe de droite la deuxième, pour comparer deux prix réels sans passer en base 100. Développée sur la branche `feature/double-echelle`, terminée pour la version finale. |
+| Double échelle verticale | En prix réel, une série à 80 000 écrase une série à 1,14. L'axe de gauche reçoit la première série cochée, l'axe de droite la deuxième, pour comparer deux prix réels sans passer en base 100. Développée sur la branche `feature/double-echelle`, terminée et intégrée à la version livrée. |
 | Découpage des courbes en blocs | Un trou de données ne doit pas être relié par un trait, qui laisserait croire à une évolution régulière là où il n'y a aucune bougie. Chaque bloc est donc dessiné séparément. |
 | Infobulle au survol | Affiche le prix réel de la bougie, sa date et sa variation depuis le début de la série, même quand le graphique est en base 100. |
 | Réimport automatique | Les fichiers JSON du dossier `data/` ne sont relus que s'ils sont plus récents que la base, pour ne pas relire 250 Mo de JSON à chaque lancement. |
@@ -449,7 +433,7 @@ Par honnêteté vis-à-vis de ce qui était annoncé :
 
 ### 7.4 Jeu de données d'exemple
 
-Un jeu de données réduit est fourni dans `data/exemple/` : les cinq mêmes séries, échantillonnées toutes les 4 heures du 25/05/2026 au 28/09/2026, soit **759 bougies par série** (environ 900 Ko au total). Il permet d'utiliser l'application sans Python et sans télécharger 250 Mo de JSON.
+Un jeu de données réduit est versionné dans `data/exemple/` : les cinq mêmes séries, échantillonnées toutes les 4 heures du 25/05/2026 au 28/09/2026, soit **759 bougies par série** (environ 900 Ko au total). Il permet d'utiliser l'application sans Python et sans télécharger 250 Mo de JSON.
 
 Procédure :
 
