@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f3460"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="430" fill="#eef1f6"/>
+
+  <!-- ================= Panneau gauche : base 100 ================= -->
+  <rect x="12" y="12" width="456" height="406" rx="8" fill="#ffffff" stroke="#b9c2d4" stroke-width="1.5"/>
+  <text x="240" y="40" font-size="13" font-weight="700" fill="#1a1a2e" text-anchor="middle">Mode « Comparer (base 100) »</text>
+  <text x="240" y="58" font-size="10.5" fill="#5b6679" text-anchor="middle">les cinq séries partent de 100 : elles deviennent superposables</text>
+
+  <line x1="60" y1="340" x2="440" y2="340" stroke="#8a93a8"/>
+  <line x1="60" y1="340" x2="60" y2="86" stroke="#8a93a8"/>
+  <g stroke="#eef1f6">
+    <line x1="60" y1="120" x2="440" y2="120"/>
+    <line x1="60" y1="164" x2="440" y2="164"/>
+    <line x1="60" y1="208" x2="440" y2="208"/>
+    <line x1="60" y1="252" x2="440" y2="252"/>
+    <line x1="60" y1="296" x2="440" y2="296"/>
+  </g>
+  <g font-size="9.5" fill="#6b7689" text-anchor="end">
+    <text x="54" y="343">90</text>
+    <text x="54" y="299">95</text>
+    <text x="54" y="255">100</text>
+    <text x="54" y="211">105</text>
+    <text x="54" y="167">110</text>
+    <text x="54" y="123">115</text>
+  </g>
+  <text x="30" y="215" font-size="10" fill="#3b4559" text-anchor="middle" transform="rotate(-90 30 215)">Indice (base 100)</text>
+  <text x="250" y="364" font-size="10" fill="#3b4559" text-anchor="middle">Temps</text>
+  <g font-size="9.5" fill="#6b7689" text-anchor="middle">
+    <text x="80" y="356">01/09</text>
+    <text x="170" y="356">10/09</text>
+    <text x="260" y="356">17/09</text>
+    <text x="350" y="356">24/09</text>
+    <text x="430" y="356">28/09</text>
+  </g>
+
+  <!-- Courbes base 100 -->
+  <path d="M70 262 L110 252 L150 268 L190 248 L230 258 L270 236 L310 244 L350 224 L390 232 L430 214"
+        fill="none" stroke="#1f77b4" stroke-width="2"/>
+  <path d="M70 284 L110 292 L150 274 L190 282 L230 262 L270 272 L310 252 L350 262 L390 244 L430 253"
+        fill="none" stroke="#ff7f0e" stroke-width="2"/>
+  <!-- Série coupée par un trou : deux blocs distincts, jamais reliés -->
+  <path d="M70 246 L110 240 L150 250 L190 236 L220 242" fill="none" stroke="#2ca02c" stroke-width="2"/>
+  <path d="M262 228 L300 234 L340 218 L380 226 L430 208" fill="none" stroke="#2ca02c" stroke-width="2"/>
+  <path d="M70 302 L110 294 L150 306 L190 292 L230 302 L270 288 L310 296 L350 280 L390 288 L430 274"
+        fill="none" stroke="#d62728" stroke-width="2"/>
+  <path d="M70 272 L110 280 L150 264 L190 272 L230 256 L270 264 L310 246 L350 254 L390 238 L430 246"
+        fill="none" stroke="#9467bd" stroke-width="2"/>
+
+  <!-- Annotation trou -->
+  <circle cx="241" cy="235" r="11" fill="none" stroke="#0f3460" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <line x1="250" y1="228" x2="292" y2="196" stroke="#0f3460" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="298" y="190" font-size="9.5" fill="#0f3460">trou de données : les blocs</text>
+  <text x="298" y="202" font-size="9.5" fill="#0f3460">ne sont pas reliés</text>
+
+  <!-- Légende -->
+  <g font-size="9.5" fill="#1a1a2e">
+    <line x1="70" y1="384" x2="88" y2="384" stroke="#1f77b4" stroke-width="2.5"/><text x="94" y="387">BTC</text>
+    <line x1="136" y1="384" x2="154" y2="384" stroke="#ff7f0e" stroke-width="2.5"/><text x="160" y="387">ETH</text>
+    <line x1="202" y1="384" x2="220" y2="384" stroke="#2ca02c" stroke-width="2.5"/><text x="226" y="387">EUR</text>
+    <line x1="268" y1="384" x2="286" y2="384" stroke="#d62728" stroke-width="2.5"/><text x="292" y="387">GOLD</text>
+    <line x1="344" y1="384" x2="362" y2="384" stroke="#9467bd" stroke-width="2.5"/><text x="368" y="387">SOLU</text>
+  </g>
+
+  <!-- ================= Panneau droit : prix réel, deux échelles ================= -->
+  <rect x="492" y="12" width="456" height="406" rx="8" fill="#ffffff" stroke="#b9c2d4" stroke-width="1.5"/>
+  <text x="720" y="40" font-size="13" font-weight="700" fill="#1a1a2e" text-anchor="middle">Prix réel — deux échelles verticales</text>
+  <text x="720" y="58" font-size="10.5" fill="#5b6679" text-anchor="middle">le BTC garde son échelle, l'EUR la sienne : aucune courbe n'écrase l'autre</text>
+
+  <line x1="540" y1="340" x2="920" y2="340" stroke="#8a93a8"/>
+  <line x1="540" y1="340" x2="540" y2="86" stroke="#8a93a8"/>
+  <line x1="920" y1="340" x2="920" y2="86" stroke="#8a93a8"/>
+  <g stroke="#eef1f6">
+    <line x1="540" y1="120" x2="920" y2="120"/>
+    <line x1="540" y1="164" x2="920" y2="164"/>
+    <line x1="540" y1="208" x2="920" y2="208"/>
+    <line x1="540" y1="252" x2="920" y2="252"/>
+    <line x1="540" y1="296" x2="920" y2="296"/>
+  </g>
+  <g font-size="9.5" fill="#6b7689" text-anchor="end">
+    <text x="534" y="343">60 000</text>
+    <text x="534" y="299">66 000</text>
+    <text x="534" y="255">72 000</text>
+    <text x="534" y="211">78 000</text>
+    <text x="534" y="167">84 000</text>
+    <text x="534" y="123">90 000</text>
+  </g>
+  <g font-size="9.5" fill="#6b7689" text-anchor="start">
+    <text x="926" y="343">1,10</text>
+    <text x="926" y="299">1,12</text>
+    <text x="926" y="255">1,14</text>
+    <text x="926" y="211">1,16</text>
+    <text x="926" y="167">1,18</text>
+    <text x="926" y="123">1,20</text>
+  </g>
+  <text x="540" y="384" font-size="10" fill="#1f77b4" text-anchor="start">BTC (USDT) — axe de gauche</text>
+  <text x="920" y="384" font-size="10" fill="#2ca02c" text-anchor="end">EUR (USDT) — axe de droite</text>
+  <text x="730" y="364" font-size="10" fill="#3b4559" text-anchor="middle">Temps</text>
+  <g font-size="9.5" fill="#6b7689" text-anchor="middle">
+    <text x="560" y="356">01/09</text>
+    <text x="650" y="356">10/09</text>
+    <text x="740" y="356">17/09</text>
+    <text x="830" y="356">24/09</text>
+    <text x="910" y="356">28/09</text>
+  </g>
+
+  <!-- BTC sur l'axe de gauche -->
+  <path d="M550 300 L590 288 L630 306 L670 280 L710 292 L750 262 L790 272 L830 246 L870 256 L910 232"
+        fill="none" stroke="#1f77b4" stroke-width="2"/>
+  <!-- EUR sur l'axe de droite -->
+  <path d="M550 250 L590 258 L630 240 L670 248 L710 230 L750 240 L790 220 L830 230 L870 214 L910 224"
+        fill="none" stroke="#2ca02c" stroke-width="2"/>
+
+  <!-- Infobulle -->
+  <rect x="742" y="88" width="164" height="66" rx="6" fill="#1a1a2e"/>
+  <g font-size="9.5" fill="#ffffff">
+    <text x="752" y="105" font-weight="600">BTC — 28/09/2026 08:00</text>
+    <text x="752" y="120">83 218 USDT</text>
+    <text x="752" y="133">+2,34 % depuis le début</text>
+    <text x="752" y="146" fill="#c3cbdd">indice 102,34</text>
+  </g>
+  <line x1="830" y1="154" x2="830" y2="196" stroke="#1a1a2e" stroke-width="1" stroke-dasharray="3 2"/>
+  <circle cx="830" cy="200" r="4" fill="#1f77b4" stroke="#ffffff" stroke-width="1.5"/>
+
+</svg>

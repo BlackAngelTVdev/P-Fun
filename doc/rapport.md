@@ -5,7 +5,7 @@
 |---|---|
 | **Projet** | P-Fun |
 | **Auteur** | Damien Rochat |
-| **Date de rendu** | *24 août 2026 / 30 octobre 2026* |
+| **Date de rendu** | *30 octobre 2026* |
 | **Encadrant** | *M. Carrel* |
 
 ---
@@ -35,8 +35,8 @@
 Le but du projet est de créer un logiciel qui affiche des graphiques de séries temporelles. Concrètement, le programme doit permettre :
 
 - d'afficher plusieurs séries en même temps sur un même graphique, pour pouvoir les comparer ;
-- de stocker les données en local au format JSON, pour pouvoir les consulter sans connexion ;
-- d'importer de nouvelles données (fichiers CSV, fichiers JSON ou API Binance) ;
+- de stocker les données en local dans une base SQLite, pour pouvoir les consulter sans connexion (les fichiers JSON servent de format d'import) ;
+- d'importer de nouvelles données au format JSON (klines Binance) et de les fusionner avec celles déjà stockées ;
 - de zoomer, de naviguer dans le temps et de choisir les séries à afficher ou masquer.
 
 On a choisi le domaine de la cryptomonnaie. Par exemple, on pourra comparer l'évolution du Bitcoin et de l'Ethereum sur la même période et voir laquelle a le mieux performé.
@@ -65,23 +65,25 @@ Comparer plusieurs cryptomonnaies sur un même graphique est utile pour voir :
 
 #### Les séries de données choisies
 
-Le cahier des charges demande au moins 5 séries cohérentes de 500 valeurs minimum. On a pris 5 paires de cryptomonnaies, toutes cotées contre l'USDT (un stablecoin qui vaut environ 1 dollar) :
+Le cahier des charges demande au moins 5 séries cohérentes de 500 valeurs minimum. On a pris 5 paires cotées contre l'USDT, un stablecoin qui vaut environ 1 dollar :
 
 | Série | Description |
 |:---|:---|
 | BTC/USDT | Bitcoin, la référence du marché |
 | ETH/USDT | Ethereum, la deuxième plus grosse capitalisation |
-| BNB/USDT | La monnaie de la plateforme Binance |
 | SOL/USDT | Solana, une alternative plus récente |
-| XRP/USDT | Ripple, orienté paiements |
+| PAXG/USDT | PAX Gold, un actif adossé à l'or physique |
+| EUR/USDT | Le cours de l'euro face au dollar |
 
-Ces séries sont cohérentes entre elles parce qu'elles sont toutes comparées au même actif (l'USDT). On peut donc les afficher sur le même graphique et les comparer directement, sans conversion. Chaque série contient largement plus de 500 valeurs (par exemple les cours quotidiens sur plusieurs années).
+Ces séries sont cohérentes entre elles parce qu'elles sont toutes cotées dans la même unité, l'USDT : on peut les afficher sur un même graphique et comparer leurs variations, sans conversion. Les trois premières sont des cryptomonnaies, la quatrième suit l'or et la cinquième une devise ; c'est justement ce mélange qui rend l'échelle des prix ingérable sans le mode « base 100 » (voir §7.1). Chaque série contient 181 954 bougies à la minute, du 25 mai au 28 septembre 2026, soit 909 770 bougies stockées au total.
+
+Les fichiers de données gardent les noms historiques `btc.json`, `eth.json`, `solu.json`, `gold.json` (PAXG) et `eur.json` (EUR) ; c'est le nom du fichier qui devient le nom de la série.
 
 #### Les sources de données
 
-Les données viennent de l'API publique de Binance (`https://api.binance.com`). On utilise le endpoint des klines (chandeliers), qui renvoie pour une paire donnée l'historique des prix : ouverture, clôture, plus haut, plus bas et volume, pour un intervalle choisi (1h, 1 jour, etc.). Cette API est gratuite et ne demande pas d'inscription pour les données publiques. Elle renvoie du JSON.
+Les données viennent de l'API publique de Binance (`https://api.binance.com`). On utilise l'endpoint des klines (chandeliers), qui renvoie pour une paire donnée l'historique des prix : ouverture, clôture, plus haut, plus bas et volume, pour un intervalle choisi (1h, 1 jour, etc.). Cette API est gratuite et ne demande pas d'inscription pour les données publiques. Elle renvoie du JSON.
 
-Les données récupérées sont ensuite enregistrées en local au format JSON. Comme ça, on peut les consulter hors ligne et en importer d'autres depuis des fichiers CSV ou JSON.
+Un script fourni avec le projet (`scripts/fetch_binance_data.py`) interroge cette API et écrit la réponse telle quelle dans un fichier JSON par paire. Ces fichiers sont ensuite importés dans la base SQLite locale (`data/p-fun.db`) ; l'application ne lit plus que la base, ce qui permet de travailler hors ligne. Le script ne dépend que de la bibliothèque standard de Python et pagine les appels, l'API ne renvoyant pas plus de 1000 bougies par requête.
 
 
 ---
@@ -128,11 +130,11 @@ Et les 4 autres séries doivent rester visibles
 
 #### US3 – Stockage local
 
-> En tant qu'utilisateur, je veux que PTL stocke localement l'ensemble des séries, pour que je puisse travailler sur mes données hors connexion.
+> En tant qu'utilisateur, je veux que P-Fun stocke localement l'ensemble des séries, pour que je puisse travailler sur mes données hors connexion.
 
 **Scénario 1 : Persistance et consultation des séries en mode hors connexion**
 ```
-Étant donné que l'application PTL a synchronisé et stocké l'ensemble des séries localement lors de la dernière connexion
+Étant donné que l'application P-Fun a synchronisé et stocké l'ensemble des séries localement lors de la dernière connexion
 Et que l'appareil est actuellement hors ligne (pas d'accès au réseau)
 Quand je lance l'application et accède au module de visualisation
 Alors l'ensemble des séries enregistrées doit s'afficher correctement sur l'interface
@@ -142,11 +144,11 @@ Et un indicateur discret doit informer que les données affichées proviennent d
 
 #### US4 – Importation
 
-> En tant qu'utilisateur, je veux ajouter des valeurs aux séries stockées localement. PTL me permet d'importer un ou plusieurs formats de données, comme par exemple : fichiers CSV, fichiers JSON, JSON reçu d'une API.
+> En tant qu'utilisateur, je veux ajouter des valeurs aux séries stockées localement. P-Fun me permet d'importer un ou plusieurs formats de données, comme par exemple : fichiers CSV, fichiers JSON, JSON reçu d'une API.
 
 **Scénario 1 : Importation réussie d'un fichier CSV ou JSON local**
 ```
-Étant donné que l'application PTL est ouverte
+Étant donné que l'application P-Fun est ouverte
 Quand j'importe un fichier local valide (format .csv ou .json) contenant de nouvelles valeurs pour une série
 Alors les données doivent être analysées et intégrées dans le stockage local
 Et la série concernée doit être automatiquement mise à jour dans l'interface graphique
@@ -182,6 +184,27 @@ Et un message de confirmation doit indiquer le nombre de points ajoutés
 - Graphiques avec ScottPlot
 - Au minimum 3 tests unitaires significatifs
 
+### 2.5 Maquettes
+
+Les maquettes ci-dessous fixent l'organisation de l'écran avant d'écrire l'interface : une seule fenêtre, un panneau latéral pour les choix et un grand panneau pour le graphique. Elles reprennent l'organisation retenue au sprint 0, avant le code, et ont été redessinées pour ce rapport ; la double échelle a été ajoutée en fin de projet.
+
+<img src="./img/maquette-fenetre.png" alt="Maquette de la fenêtre principale">
+
+1. Une case à cocher par série, avec son nombre de bougies, pour masquer ou afficher une courbe (US2).
+2. Le mode « Comparer (base 100) », coché par défaut, qui rend comparables des prix de 80 000 et de 1,14 (US5).
+3. L'import d'un dossier JSON, qui fusionne les fichiers dans la base (US4).
+4. L'état de la base locale : nom du fichier, nombre de bougies et taille sur le disque (US3).
+5. Le graphique, avec sa légende et le rappel du nombre de séries tracées et de la source des données (US1).
+
+<img src="./img/maquette-affichage.png" alt="Maquette des deux modes d'affichage">
+
+La seconde maquette détaille les deux modes d'affichage et le survol :
+
+1. En base 100, les cinq séries partent de 100 et se superposent : les variations se comparent directement.
+2. Un trou de données coupe le trait : les deux blocs ne sont jamais reliés par une ligne, qui laisserait croire à une évolution continue.
+3. En prix réel, chaque série garde son échelle : l'axe de gauche porte le BTC, l'axe de droite l'EUR, et aucune courbe n'écrase l'autre.
+4. L'infobulle affiche la date, le prix réel, la variation depuis le début de la série et, en base 100, l'indice tracé à l'écran.
+
 ---
 
 ## 3. Planification initiale
@@ -196,13 +219,13 @@ On travaille en agile, avec des sprints d'une semaine. À la fin de chaque sprin
 |:---:|:---|:---|:---|:---:|
 | 0 | 24 août | Analyse du besoin, user stories, maquettes | CDC fonctionnel validé | ✅  |
 | 1 | 31 août | Projet Git, structure C#, premier GUI WinForms | Fenêtre principale avec un graphique vide | ✅  |
-| 2 | 7 septembre | Connexion à l'API Binance, parsing des données | Affichage des premières vraies données | ⬜  |
+| 2 | 7 septembre | Connexion à l'API Binance, parsing des données | Affichage des premières vraies données | ✅  |
 | 3 | 14 septembre | Stockage local JSON, import CSV/JSON | Persistance des données | ✅  |
 | 4 | 21 septembre | Multi-séries, sélection des séries, zoom | Graphique multi-courbes interactif | ✅ |
-| 5 | 28 septembre | Refactoring LINQ, extensions C# | Code conforme aux contraintes | 🟡 |
+| 5 | 28 septembre | Refactoring LINQ, extensions C# | Code conforme aux contraintes | ✅ |
 | 6 | 5 octobre | Tests unitaires (≥ 3), corrections de bugs | Rapport de tests | ✅ |
-| 7 | 12 octobre | Finitions, UI, documentation | Version candidate | ⬜ |
-| 8 | 19–30 octobre | Rapport final, bilan, release GitHub | Livraison finale | ⬜ |
+| 7 | 12 octobre | Finitions, UI, documentation | Version candidate | ✅ |
+| 8 | 19–30 octobre | Rapport final, bilan, release GitHub | Livraison finale | 🟡 |
 
 > **Légende des statuts :**
 > - ⬜ Non commencé
@@ -227,12 +250,10 @@ Le projet dure 24 périodes au total. Avec un sprint par semaine sur environ 9 s
 
 ## 4. Rapport de tests
 
-<!-- Stratégie de tests, résultats, couverture, bugs trouvés et corrigés -->
-
 ### 4.1 Stratégie de tests
 Un test = une seule vérification. J'utilise xUnit dans un projet dédié (P-Fun.Tests). Mes noms de tests parlent d'eux-mêmes (ex: ImportFolder_IgnoreLesFichiersIllisibles ou ShouldImport_BasePlusRecenteQueTousLesJson_NeRelitRien), donc si un truc plante, je sais tout de suite quoi sans ouvrir le code.
 
-Délier la logique de la UI. J'ai sorti toute la logique dans Core et Data. Rien à voir avec WinForms ou ScottPlot. Calculer une base 100 ou découper des données se fait à la volée sans ouvrir d'interface, ce qui rend les tests ultrarapides.
+Découpler la logique de l'interface. J'ai sorti toute la logique dans Core et Data. Rien à voir avec WinForms ou ScottPlot. Calculer une base 100 ou découper des données se fait à la volée sans ouvrir d'interface, ce qui rend les tests ultrarapides.
 
 Zéro donnée réelle touchée. Les tests tournent dans des dossiers temporaires générés par GUID et nettoyés dans la foulée. Rien ne vient polluer ou casser data/ ni la prod.
 
@@ -244,9 +265,17 @@ La UI se vérifie à la main. Tester du WinForms ou du rendu graphique ScottPlot
 
 ### 4.2 Résultats des tests
 
-Les tests passent tous.
+Les 9 tests automatisés passent, en moins d'une seconde (dernière exécution : `9 réussis, 0 échec`).
+
+| Fichier de test | Ce qui est vérifié | Tests |
+|:---|:---|:---:|
+| `SeriesDatabaseTests` | Fusion sans doublon, remplacement des bougies déjà stockées, tri chronologique, fichiers illisibles ignorés | 3 |
+| `DataFolderPolicyTests` | Réimport uniquement si un JSON est plus récent que la base | 2 |
+| `HoverSearchTests` | Survol avec une ou deux échelles, série de droite, graphique vide | 4 |
 
 <img src="./img/084442.png">
+
+> Capture du 05/10 : la suite comptait alors 5 tests. Elle en compte 9 depuis l'ajout de `HoverSearchTests` et le retrait des tests peu pertinents.
 
 ### 4.3 Bugs identifiés et corrections
 
@@ -268,24 +297,74 @@ Les tests passent tous.
 > **Légende des statuts :**
 > - ❌ Non résolu
 > - ✅ Résolu
+
 ---
 
 ## 5. Usage de l'intelligence artificielle dans le projet
 
-| Utilisation | Modèle |
-|:---|:---|
-| Correction de l'orthographe du projet | Xiaomi MiMo-2.5 |
-| Débogage | DeepSeek V4.1 Flash (High) |
-| Partie performance du programme | Space Bunny Alpha (High) |
-| Tests unitaires | DeepSeek V4.1 Flash (High) |
+Cette section décrit l'usage réel de l'IA sur le projet : les outils, leur mode d'utilisation, trois exemples concrets et ce que j'ai vérifié avant de garder chaque modification. Le détail des sessions se trouve dans le journal de travail et dans l'historique Git.
 
-Tous les modèles ci-dessus tournent sur mon propre serveur de LLM : aucune donnée du projet n'a servi à entraîner un modèle tiers.
+### 5.1 Outils et modes d'utilisation
 
-J'ai utilisé l'IA pour quatre choses : l'orthographe, le débogage, la performance et les tests. Le poste dont j'ai le plus besoin, c'est l'orthographe — je suis mauvais en français, je ne m'en sors pas avec les accords, et je fais des fautes même dans ce rapport. Je m'en sers donc comme correcteur, surtout en fin de session sur les fichiers entiers : commentaires de code, messages de commit, rapport. Je lui ai toujours demandé de corriger sans reformuler, parce qu'un rapport entièrement réécrit par une IA ne serait plus le mien.
+| Outil | Modèle | Mode | Usage principal |
+|:---|:---|:---|:---|
+| **Codebuff** | DeepSeek V4.1 Flash (High) | **Agent** : lit les fichiers, lance `dotnet build` et `dotnet test`, écrit les modifications | Débogage, tests unitaires, refactor LINQ, performance, relecture du rapport |
+| **Codebuff** | DeepSeek V4.1 Flash (High) | **Chat** : conversation sans accès au dépôt | Questions ponctuelles sur ScottPlot, SQLite et le C# |
+| Serveur LLM local | Xiaomi MiMo-2.5 | Chat | Correction orthographique |
+| Serveur LLM local | Space Bunny Alpha (High) | Chat | Analyse de performance |
 
-Sur le code, elle a servi de deuxième avis. Quand j'étais bloqué, elle ne m'a pas donné la réponse.
+La différence entre les deux modes est concrète. En **mode agent**, l'outil a accès au dépôt : il lit les fichiers, exécute les commandes et propose des diffs que je relis avant de garder. En **mode chat**, il ne voit que ce que je lui colle ; je recopie moi-même le code dans le projet. Les tâches qui touchent plusieurs fichiers (refactor, tests, rapport) sont passées par le mode agent ; les questions isolées et la correction de texte sont restées en chat.
 
-Une limite que j'ai posée dès le début : les messages de commit ne doivent pas être écrits par l'IA. Si je ne sais pas expliquer un changement, c'est que je ne le comprends pas encore.
+L'usage le plus fréquent reste la correction orthographique, en chat, sur des fichiers entiers : commentaires, README et rapport. La consigne est toujours « corrige sans reformuler », parce qu'un rapport entièrement réécrit par une IA ne serait plus le mien. L'outil a aussi signalé des incohérences qu'il ne devait pas corriger lui-même (BNB/XRP annoncés alors que les fichiers sont PAXG/EUR, « PTL » au lieu de P-Fun) : je les ai corrigées à la main dans ce rapport.
+
+Transparence sur les traces : deux commits portent encore la co-signature de Codebuff — celui du 01/09 sur le rapport et une version du commit de performance (`0f4d87e`). La version finale de ce dernier (`048e13d`) a été réécrite sans l'attribut, mais l'ancienne reste dans l'historique. Les commits suivants n'en portent plus : les messages sont écrits par moi, car si je ne sais pas expliquer un changement, c'est que je ne le comprends pas encore.
+
+### 5.2 Trois exemples concrets
+
+#### Exemple 1 — Passer tout le code en LINQ
+
+**Demande** (28.09.2026) :
+> « Fait en sorte que tout soit LINQ, qu'il y ait 0 boucle for, que ce soit que de la programmation fonctionnelle — mais refactor pas avant d'avoir commit tout ça. »
+
+**Résultat** : l'agent a d'abord recensé 7 boucles réelles (`JsonFolderImporter` ×2, `SeriesDatabase` ×2, `mainPage` ×2, un test), puis les a remplacées par `Select`, `Where`, `AddRange` et un `[Theory]`. Build : 0 erreur ; 27 tests au vert à ce moment-là.
+
+**Corrections et décisions** :
+
+- L'agent a laissé un `List.ForEach` sur les écritures SQL. Je l'ai gardé : LINQ ne fournit aucun opérateur pour un effet de bord par élément, et le commentaire explique pourquoi. Le reste du noyau n'a plus de boucle.
+- Il avait ajouté un pied de page « Generated with… » au commit. Je l'ai retiré par `--amend` : la règle du projet est que les messages de commit sont écrits par moi.
+- J'ai relancé la recherche `for|foreach|while` sur tous les `.cs` pour vérifier qu'il ne restait qu'un commentaire, puis les tests.
+
+#### Exemple 2 — Rendre le graphique fluide
+
+**Demande** (28.09.2026) :
+> « Quand les 5 séries sont cochées avec plus de 21 000 points chacune, les mouvements dans le graphique saccadent. »
+
+**Résultat** : deux causes trouvées. `Scatter` dessinait un marqueur par point (environ 100 000 marqueurs par image) → remplacement par `SignalXY` ; le survol reprojetait tous les points à chaque mouvement → recherche limitée à une fenêtre trouvée par dichotomie (`Array.BinarySearch`). Mesures : rendu d'une image 900 × 600 de **168,7 ms à 10,3 ms** ; recherche du point survolé de **6,30 ms à 0,18 ms**. Deux tests ajoutés pour verrouiller le survol sur une grande série.
+
+**Corrections et décisions** :
+
+- La première version ne compilait pas : `IPalette.GetColor` renvoie un `ScottPlot.Color`, pas un `System.Drawing.Color`. Correction explicite dans le code.
+- Les mesures venaient d'un banc d'essai temporaire, supprimé après relevé ; j'ai gardé les valeurs dans le journal pour pouvoir comparer plus tard.
+- Pas de `NaN` dans les données pour représenter les trous : la documentation de ScottPlot indique que les tracés de type signal ne les gèrent pas. D'où le découpage en blocs de l'exemple 3.
+
+#### Exemple 3 — Trous de données et chevauchement d'import
+
+**Demande** (28.09.2026) :
+> « Fait en sorte que au lieu que si les data se chevauche ça écrive la nouvelle au lieu de garder l'ancien, et si y a un trou de data ça ne relie pas entre 2, ça fait des points séparés. »
+
+**Résultat** : l'agent a posé une question avant de coder (que signifie « écraser » : fusionner ou remplacer tout le fichier ?), puis a produit `SeriesSegmentation` (découpage sur les trous, intervalle nominal = écart le plus fréquent, seuil ×1,5) et `DataFolderPolicy` (réimport seulement si un JSON est plus récent que la base). 12 tests ajoutés à l'époque.
+
+**Corrections et décisions** :
+
+- La fusion ne supprime jamais de bougies : elle ajoute les nouvelles et écrase celles dont l'horodatage existe déjà. C'est la réponse que j'ai donnée à la question, et elle est commentée dans le code.
+- Le découpage produit une plottable `SignalXY` par bloc, seul le premier portant le libellé de légende, sinon la même série apparaissait plusieurs fois dans la légende.
+
+### 5.3 Ce que je vérifie systématiquement
+
+- **Build et tests** avant de garder une modification : `dotnet build` puis `dotnet test`. Un code qui compile mais casse un test est refusé.
+- **Relecture du diff**, en particulier les commentaires : ils doivent expliquer le pourquoi, pas répéter le code.
+- **Aucune donnée personnelle** envoyée ; les extraits transmis se limitent au code et aux messages d'erreur.
+- **Journal de travail** : chaque session note la demande, les fichiers touchés, les vérifications et les points d'attention. C'est ce qui permet d'écrire cette section de façon factuelle.
 
 ---
 
@@ -293,18 +372,32 @@ Une limite que j'ai posée dès le début : les messages de commit ne doivent pa
 
 ### 6.1 Planning respecté ?
 
-Actuellement (28.09.2026) la planification initaial n'est pas totalement respecter. Car il y a des étapes que je n'ai pas fait dans l'ordre que ma plannification le montrais.
+Le planning a été suivi dans les grandes lignes : les cinq user stories ont été traitées (US4 partiellement) et la livraison tient dans la fenêtre prévue. Cinq écarts expliquent les statuts du tableau §3.2 :
 
+- **API (sprint 2)** : l'application n'appelle pas l'API elle-même. Le script Python de récupération est arrivé le 28/09, une fois le stockage et l'affichage stabilisés : télécharger des données sans savoir les stocker n'aurait servi à rien.
+- **Stockage (sprint 3)** : prévu en JSON, réalisé en SQLite. Avec 909 770 bougies, relire et réécrire 250 Mo de JSON à chaque lancement était trop lent ; l'upsert règle en plus la question des doublons.
+- **Refactor LINQ (sprint 5)** : fait le 28/09, après les fonctionnalités, pour ne pas refactoriser du code qui allait encore changer.
+- **Tests (sprint 6)** : consolidés le 05/10. La première suite contenait des tests peu pertinents ; ils ont été supprimés puis remplacés par 9 tests ciblés.
+- **Sprint 8** : le rapport, les maquettes, le jeu d'exemple et la finalisation de `feature/double-echelle` ont été finalisés en fin de projet.
 
+Une semaine d'absence (31/08) figure au journal ; elle a été rattrapée sur les semaines suivantes. Au total, le journal compte 49 entrées et 1 127 minutes, dont 180 minutes d'absence, soit environ 15 h 45 de travail effectif : l'enveloppe de 24 périodes n'a pas été dépassée.
 
 ### 6.2 Méthodologie
 
-J'ai utiliser l'agilité avec scrum. Même pour un projet solo je trouve ça pas mal de farie la partie "debrif" au debut ca permet de voir ou j'en suis avant de me jeter betement dans le travaille.
+J'ai utilisé Scrum, même en solo : un sprint par semaine, un tableau Kanban sur GitHub, une branche par fonctionnalité et un point de fin de sprint pour décider de la suite. Le débrief sert vraiment : c'est lui qui a fait passer le stockage avant le script de récupération, puis le refactor après les fonctionnalités.
+
+Git suit des commits conventionnels (`feat`, `fix`, `refactor`, `doc`, `chor`) et le journal de travail note chaque session. En solo, la revue est une auto-revue : je relis le diff et je relance les tests avant de passer à la suite.
 
 
 ### 6.3 Problèmes rencontrés
 
-Le plus gros problème que j'ai rencontré c'est le fait que mes differantes séries, les valeurs étais vachement éloignées les une des autres.
+1. **Des échelles incomparables.** BTC à environ 83 000 USDT contre EUR à 1,14 : sur un même axe, l'EUR devient une ligne plate. Solution : le mode base 100 (chaque série part de 100) et la double échelle verticale en prix réel.
+2. **Le volume.** Cinq fichiers d'environ 50 Mo, 909 770 bougies, une base de 24 Mo. Il a fallu importer une fois, ne réimporter que si un JSON a changé et fusionner par upsert pour ne rien dupliquer.
+3. **La fluidité.** Environ 100 000 marqueurs dessinés par image avec `Scatter`, et 6,30 ms par mouvement de souris pour le survol. `SignalXY` et la dichotomie ramènent le rendu à 10,3 ms par image et le survol à 0,18 ms.
+4. **Les trous et les chevauchements.** Un trou ne doit pas être traversé par un trait, et une bougie réimportée doit écraser l'ancienne. D'où la segmentation en blocs et l'upsert.
+5. **La limite de l'API.** 1000 bougies par requête : 14 jours en 1 minute font environ 20 000 bougies par série, donc une pagination obligatoire dans le script.
+6. **Les tests.** Trop de tests peu utiles au départ ; la suite a été réduite à 9 tests ciblés, l'interface restant vérifiée à la main.
+7. **L'IA.** Elle a produit du code faux (première version du survol qui ne compilait pas), ajouté un pied de page non voulu à un commit et surestimé la portée de certaines demandes. Chaque proposition a été relue, compilée et testée ; c'est cette vérification qui a pris du temps, pas la génération.
 
 ---
 
@@ -314,11 +407,11 @@ Le plus gros problème que j'ai rencontré c'est le fait que mes differantes sé
 
 | Fonctionnalité | Prévue ? | Réalisée ? | Commentaire |
 |:---|:---:|:---:|:---|
-| Affichage de 5 séries sur un même graphique (US1) | Oui |  Oui | Les 5 séries du dossier `data/` sont tracées au lancement, sur un axe temporel. |
-| Choix des séries affichées ou masquées (US2) | Oui |  Oui | Une case à cocher par série dans le panneau latéral. La couleur d'une série reste la même même si on en masque une autre. |
+| Affichage de 5 séries sur un même graphique (US1) | Oui |  Oui | Les 5 séries importées sont tracées au lancement, sur un axe temporel. |
+| Choix des séries affichées ou masquées (US2) | Oui |  Oui | Une case à cocher par série dans le panneau latéral. La couleur d'une série ne change pas quand on en masque une autre. |
 | Stockage local et travail hors connexion (US3) | Oui |  Oui | Pas en JSON comme prévu au départ, mais dans une base SQLite. |
 | Import de données (US4) | Oui |  Partiel | Import de dossiers JSON uniquement. Le CSV n'a pas été fait. |
-| Flexibilité d'affichage (US5) | Oui |  Oui | Zoom et déplacement natifs de ScottPlot, plus l'ajout du mode base 100 et d'une infobulle au survol. |
+| Flexibilité d'affichage (US5) | Oui |  Oui | Zoom et déplacement natifs de ScottPlot, plus le mode base 100, la double échelle verticale et une infobulle au survol. |
 
 #### Fonctions ajoutées, non prévues initialement
 
@@ -328,9 +421,10 @@ rencontrés pendant le développement :
 | Ajout | Raison |
 |:---|:---|
 | Mode « Comparer (base 100) » | Le problème principal du projet : sans cette case, une série à 82 948 USDT écrase une série à 1,14 USDT et le graphique devient illisible. Chaque série est ramenée à 100 au lieu d'être tracée dans son prix réel. |
+| Double échelle verticale | En prix réel, une série à 80 000 écrase une série à 1,14. L'axe de gauche reçoit la première série cochée, l'axe de droite la deuxième, pour comparer deux prix réels sans passer en base 100. Développée sur la branche `feature/double-echelle`, terminée pour la version finale. |
 | Découpage des courbes en blocs | Un trou de données ne doit pas être relié par un trait, qui laisserait croire à une évolution régulière là où il n'y a aucune bougie. Chaque bloc est donc dessiné séparément. |
 | Infobulle au survol | Affiche le prix réel de la bougie, sa date et sa variation depuis le début de la série, même quand le graphique est en base 100. |
-| Réimport automatique | Les fichiers JSON du dossier `data/` ne sont relus que s'ils sont plus récents que la base, pour ne pas relire 242 Mo de JSON à chaque lancement. |
+| Réimport automatique | Les fichiers JSON du dossier `data/` ne sont relus que s'ils sont plus récents que la base, pour ne pas relire 250 Mo de JSON à chaque lancement. |
 | Avertissement sur les fichiers ignorés | Un fichier illisible est ignoré en silence : le graphique manquerait alors une série sans explication. Un message liste les fichiers en cause. |
 | Compteur de bougies et taille de la base | Affichés dans le panneau latéral, pour savoir ce qui est réellement stocké. |
 
@@ -339,30 +433,38 @@ rencontrés pendant le développement :
 
 | Contrainte | Respectée ? | Détail |
 |:---|:---:|:---|
-| LINQ, pas de boucle `for` | ✅ | Refactor fait en fin de projet : 7 boucles supprimées. Seul subsiste un `List.ForEach` sur l'écriture SQL, car LINQ n'exprime pas un effet de bord par élément  (commenté) |
-| Au moins 2 extensions C# | ✅ | `PriceSeriesExtensions` (base 100, variation, libellé de légende) et `SeriesExtensions` (création d'une case à cocher). |
+| LINQ, pas de boucle `for` | ✅ | Refactor fait en fin de projet : 7 boucles supprimées. Deux `List.ForEach` subsistent, commentés : l'écriture SQL et le tracé d'un bloc, deux effets de bord que LINQ n'exprime pas. |
+| Au moins 2 extensions C# | ✅ | `PriceSeriesExtensions` (base 100, variation, libellé de légende) et `SeriesExtensions` (création d'une case à cocher). Depuis la mise à jour du 16.10, les extensions ne sont plus exigées ; elles restent en place. |
 | WinForms | ✅ | Une fenêtre principale avec un panneau latéral et un panneau de graphique. |
-| ScottPlot | ✅ | avec le type `SignalXY` choisi pour les gros volumes. |
-| Au moins 3 tests unitaires | ✅ | 5 tests automatisés au total (`SeriesDatabaseTests`, `DataFolderPolicyTests`), tous au vert |
+| ScottPlot | ✅ | `SignalXY` pour les gros volumes, une plottable par bloc contigu pour ne pas relier les trous. |
+| Au moins 3 tests unitaires | ✅ | 9 tests automatisés (`SeriesDatabaseTests`, `DataFolderPolicyTests`, `HoverSearchTests`), tous au vert |
 
 ### 7.3 Ce qui n'a pas été fait
 
 Par honnêteté vis-à-vis de ce qui était annoncé :
 
 - **L'import CSV** (US4) n'a pas été développé, seul le format JSON l'a été.
-- **L'application ne contacte pas l'API Binance** elle-même. Le téléchargement
-  passe par un script Python à lancer séparément, ce qui veut dire qu'il faut
-  ouvrir un terminal pour rafraîchir ses données.
-- **Les tests de performance** et le test de l'infobulle ne sont pas encore
-  écrits, alors que le code qui les concernée existe.
+- **L'application ne contacte pas l'API Binance** elle-même. Le téléchargement passe par un script Python à lancer séparément : il faut ouvrir un terminal pour rafraîchir ses données. Le jeu de données d'exemple (§7.4) permet de s'en passer pour découvrir l'application.
+- **Les tests de performance** ne sont pas écrits : les mesures ont été faites à la main avec un banc d'essai temporaire. Les tests de survol existent désormais (`HoverSearchTests`) ; la double échelle et l'infobulle restent vérifiées à l'œil.
+
+### 7.4 Jeu de données d'exemple
+
+Un jeu de données réduit est fourni dans `data/exemple/` : les cinq mêmes séries, échantillonnées toutes les 4 heures du 25/05/2026 au 28/09/2026, soit **759 bougies par série** (environ 900 Ko au total). Il permet d'utiliser l'application sans Python et sans télécharger 250 Mo de JSON.
+
+Procédure :
+
+1. Lancer `dotnet run --project P-Fun`.
+2. Cliquer sur **« Importer un dossier JSON… »** et choisir `data/exemple`.
+3. La base `data/p-fun.db` est créée et les cinq séries s'affichent ; le message d'import indique le nombre de bougies ajoutées.
+4. Pour repartir de zéro, fermer l'application et supprimer `data/p-fun.db` : elle sera recréée au prochain import.
+
+Les fichiers gardent le format Binance d'origine (un tableau de bougies), donc le même code d'import que les données complètes les lit. Pour des données réelles à la minute, il faut régénérer les fichiers avec le script `scripts/fetch_binance_data.py` (voir le README).
 
 ---
 
 ## 8. Conclusion
 
-<!-- Synthèse du projet, compétences acquises, perspectives d'amélioration -->
+Le projet atteint son objectif principal : cinq séries temporelles hétérogènes (crypto, or, devise) sont stockées localement dans SQLite, fusionnées à l'import et affichées sur un même graphique, avec zoom, navigation, sélection des séries, base 100, double échelle, infobulle et découpage sur les trous. Les contraintes techniques sont respectées : LINQ sans boucle dans le noyau, deux extensions C#, WinForms, ScottPlot et 9 tests unitaires. Les extensions ne sont plus exigées depuis la mise à jour du 16.10, mais elles restent en place.
 
-
-
----
+Sur le plan personnel, le projet m'a fait pratiquer LINQ de bout en bout, la séparation en couches (Core / Data / Models / Extensions) et SQLite, que je ne connaissais pas. Le refactor final et les mesures de performance sont les deux exercices qui m'ont le plus appris : ils obligent à comprendre le code existant avant de le modifier.
 

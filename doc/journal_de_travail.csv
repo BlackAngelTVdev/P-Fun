@@ -52,3 +52,5 @@ Date,Nom,Temps,État,Description,Type
 "05/10/2026","fix(test): correction des tests et suppression","[25]","[DONE]","il y avait bcp de test inutile"
 "05/10/2026","chor(JNR): update","[2]","[DONE]",""
 "05/10/2026","chor(repo): maj readme","[35]","[DONE]","mise a jour du readme, untrak de la db"
+"05/10/2026","chor(jnr): maj","[1]","[DONE]",""
+"05/10/2026","feat(graph): double échelle","[40]","[WIP]",""
