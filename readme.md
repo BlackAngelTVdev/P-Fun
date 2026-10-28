@@ -7,8 +7,8 @@
 
 > **Concevoir un logiciel pour afficher des graphiques de séries temporelles**
 
-Application de bureau qui superpose plusieurs séries temporelles de cryptomonnaies et
-d'or sur un même graphique, avec les données stockées localement.
+Application de bureau qui superpose plusieurs séries temporelles de cryptomonnaies,
+d'or et de devises sur un même graphique, avec les données stockées localement.
 
 ---
 
@@ -38,6 +38,9 @@ dans `P-Fun/Core/` et se testent sans ouvrir la fenêtre.
 - Palette de couleurs catégorie (Category10) attribuée automatiquement à chaque série.
 - Mode **comparaison en base 100**, indispensable pour comparer un bitcoin à 60 000
   et un euro à 1,14 sur le même graphique sans que l'un écrase l'autre.
+- **Double échelle verticale** en prix réel : la première série cochée garde l'axe de
+  gauche, la deuxième passe à droite, ce qui permet de comparer deux prix très éloignés
+  sans passer en base 100.
 - Segmentation des séries sur les trous de données : deux blocs non jointifs ne sont
   pas reliés, ce qui évite de laisser croire à une tendance qui n'existe pas.
 
@@ -61,7 +64,7 @@ dans `P-Fun/Core/` et se testent sans ouvrir la fenêtre.
   recherche du point survolé, extensions de séries, segmentation sur les trous.
 - Couche d'accès aux données (`P-Fun/Data/`) isolée : import JSON, base SQLite et
   politique d'import (décider si le dossier JSON doit être relu au démarrage).
-- Tests xUnit sur la lecture/écriture en base et sur la politique d'import.
+- Tests xUnit sur la lecture/écriture en base, la politique d'import et le survol.
 
 ## 🛠 Tech Stack
 
@@ -104,9 +107,10 @@ bougies et remplace celles qui chevauchent des données déjà stockées.
 
 ### Récupérer les données
 
-> **Les données ne sont pas versionnées.** Le dossier `data/` contient des fichiers
-> générés et volumineux : environ 23 Mo pour la base SQLite, plus de 240 Mo pour les
-> JSON. Ils sont ignorés par git et doivent être régénérés localement.
+> **Les données réelles ne sont pas versionnées.** Le dossier `data/` contient des
+> fichiers générés et volumineux : environ 23 Mo pour la base SQLite, plus de 240 Mo
+> pour les JSON. Ils sont ignorés par git et doivent être régénérés localement. Seul
+> le jeu réduit de `data/exemple/` (~900 Ko) est fourni avec le projet.
 
 L'application n'appelle pas l'API Binance elle-même. C'est le script Python qui récupère
 les bougies et écrit un fichier par série :
@@ -126,15 +130,33 @@ Le script écrit `btc.json`, `eth.json`, `solu.json`, `gold.json` et `eur.json` 
 `data/`. L'API Binance renvoyant au maximum 1000 bougies par requête, le script pagine
 automatiquement pour couvrir toute la plage demandée.
 
+### Données d'exemple (sans Python)
+
+Un jeu réduit est versionné dans `data/exemple/` : les 5 séries échantillonnées toutes
+les 4 heures du 25/05/2026 au 28/09/2026, soit 759 bougies par série (~900 Ko).
+
+```bash
+dotnet run --project P-Fun
+```
+
+1. Cliquer sur **Importer un dossier JSON…**.
+2. Choisir le dossier `data/exemple`.
+3. Les 5 séries s'affichent ; la base `data/p-fun.db` est créée ou mise à jour.
+
+Pour repartir de zéro, fermer l'application et supprimer `data/p-fun.db` : elle sera
+recréée au prochain import. Les fichiers gardent le format Binance, donc le même
+importeur les lit que les données complètes.
+
 ## 🧪 Tests
 
-Les tests unitaires couvrent la couche de données, celle qui contient les règles métier
-les plus risquées :
+Les 9 tests unitaires couvrent la couche de données et le survol, là où se trouvent les
+règles métier les plus risquées :
 
 | Fichier de test | Ce qui est vérifié |
 | :--- | :--- |
 | `SeriesDatabaseTests.cs` | Import d'un dossier, remplacement des bougies déjà stockées sans doublon, tri chronologique, fichiers illisibles ignorés |
 | `DataFolderPolicyTests.cs` | Le dossier JSON n'est relu que si son fichier le plus récent est plus récent que la base |
+| `HoverSearchTests.cs` | Survol avec une ou deux échelles verticales, série de droite, graphique vide |
 
 ```bash
 dotnet test
@@ -153,7 +175,7 @@ P-Fun/
 P-Fun.Tests/        Tests xUnit
 scripts/            Récupération des données Binance
 doc/                Rapport de projet
-data/               Données générées (non versionnées)
+data/               Données générées (non versionnées) + jeu d'exemple versionné
 ```
 
 ## 🤝 Contribution

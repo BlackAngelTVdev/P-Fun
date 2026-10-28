@@ -27,6 +27,11 @@ namespace P_Fun
         // tracée dans son prix réel, sinon une série à 60 000 écrase tout le reste.
         private bool _normalizeToBase100 = true;
 
+        // Série tracée sur l'axe vertical de droite, ou null si le graphique
+        // n'a qu'une seule échelle. On retient la série elle-même et non sa
+        // position dans la liste, qui change au gré des cases cochées.
+        private PriceSeries? _rightAxisSeries;
+
         /// <summary>
         /// Palette des séries. Les couleurs sont attribuées d'après la position de
         /// la série dans la liste complète, jamais d'après l'ordre de tracé :
@@ -132,6 +137,7 @@ namespace P_Fun
             plotPanel.Plot.Axes.DateTimeTicksBottom();
             plotPanel.Plot.Axes.Bottom.Label.Text = "Temps";
             plotPanel.Plot.Axes.Left.Label.Text = "Prix (USDT)";
+            plotPanel.Plot.Axes.Right.Label.Text = "Prix (USDT)";
             HideBenchmark();
 
             plotPanel.MouseMove += OnPlotMouseMove;
@@ -154,7 +160,7 @@ namespace P_Fun
             HoveredPoint? hovered = HoverSearch.FindNearest(
                 _plottedSeries,
                 PlotChartArea(),
-                PlotAxisRange(),
+                AxisRangeOf,
                 e.X,
                 e.Y,
                 HoverRadius);
@@ -188,10 +194,18 @@ namespace P_Fun
             return new ChartArea(area.Left, area.Bottom, area.Width, area.Height);
         }
 
-        /// <summary>Limites des axes, dans l'unité des données tracées (les dates sont des OADate).</summary>
-        private AxisRange PlotAxisRange()
+        /// <summary>
+        /// Limites servant à projeter une série vers l'écran. Avec deux échelles
+        /// verticales, chaque série doit être projetée avec les limites de son
+        /// propre axe : sinon une série tracée à droite chercherait ses points à
+        /// une hauteur calculée sur l'axe de gauche.
+        /// </summary>
+        private AxisRange AxisRangeOf(PlottedSeries plotted)
         {
-            ScottPlot.AxisLimits limits = plotPanel.Plot.Axes.GetLimits();
+            ScottPlot.IYAxis yAxis = plotted.OnRightAxis
+                ? plotPanel.Plot.Axes.Right
+                : plotPanel.Plot.Axes.Left;
+            ScottPlot.AxisLimits limits = plotPanel.Plot.Axes.GetLimits(plotPanel.Plot.Axes.Bottom, yAxis);
             return new AxisRange(limits.Left, limits.Right, limits.Bottom, limits.Top);
         }
 
@@ -383,6 +397,15 @@ namespace P_Fun
 
             List<PriceSeries> series = [.. SelectedImportedSeries];
 
+            // Deux échelles verticales n'ont de sens qu'en prix réel : en base
+            // 100 toutes les séries partagent la même unité, et un second axe
+            // ne ferait que montrer deux graduations de la même chose.
+            // La deuxième série cochée passe à droite, les suivantes restent à
+            // gauche pour ne pas multiplier les graduations.
+            _rightAxisSeries = !_normalizeToBase100 && series.Count >= 2 ? series[1] : null;
+            plotPanel.Plot.Axes.Right.IsVisible = _rightAxisSeries is not null;
+            plotPanel.Plot.Axes.Right.Label.Text = "Prix (USDT)";
+
             _plottedSeries.AddRange(series.Select(PlotOne));
 
             plotPanel.Plot.Axes.Left.Label.Text = _normalizeToBase100
@@ -400,7 +423,7 @@ namespace P_Fun
                     : $"Aucune série sélectionnée ({_dataSource})")
                 : $"{series.Count}/{_importedSeries.Count} série(s) tracée(s) — {(_normalizeToBase100 ? "base 100 — " : string.Empty)}{_dataSource}");
 
-            plotPanel.Plot.Axes.AutoScale();
+            ScaleAxes();
             HideBenchmark();
 
             // Refresh() déclenche le rendu de façon synchrone : LastRender est à
@@ -416,6 +439,7 @@ namespace P_Fun
         {
             PriceSeries plotted = _normalizeToBase100 ? priceSeries.NormalizedToBase100() : priceSeries;
             double[] xs = [.. plotted.Timestamps.Select(ToOADate)];
+            bool onRightAxis = ReferenceEquals(priceSeries, _rightAxisSeries);
 
             // Un trait par bloc contigu : un trou de données n'est jamais
             // traversé par une ligne, qui laisserait croire à une évolution
@@ -425,9 +449,9 @@ namespace P_Fun
             // Tracer est un effet de bord par bloc, que LINQ n'exprime pas : le
             // premier bloc porte le libellé de légende, les suivants non (sinon
             // un trou ferait apparaître la même série plusieurs fois).
-            blocks.ForEach(block => AddBlock(priceSeries, xs, plotted.Closes, block, block.Start == 0));
+            blocks.ForEach(block => AddBlock(priceSeries, xs, plotted.Closes, block, block.Start == 0, onRightAxis));
 
-            return new PlottedSeries(priceSeries, xs, plotted.Closes);
+            return new PlottedSeries(priceSeries, xs, plotted.Closes, onRightAxis);
         }
 
         /// <summary>
@@ -444,15 +468,103 @@ namespace P_Fun
             double[] xs,
             double[] values,
             SeriesSegment block,
-            bool withLegend)
+            bool withLegend,
+            bool onRightAxis)
         {
             var signal = plotPanel.Plot.Add.SignalXY(xs[block.Start..block.End], values[block.Start..block.End]);
             signal.LegendText = withLegend ? priceSeries.LegendLabel(_normalizeToBase100) : string.Empty;
             signal.Color = SeriesColor(priceSeries);
 
+            // Rattacher la courbe à l'axe de droite suffit : ScottPlot la dessine
+            // avec la graduation de cet axe et l'exclut de la mise à l'échelle
+            // automatique de l'axe de gauche.
+            if (onRightAxis)
+            {
+                signal.YAxisIndex = RightAxisIndex();
+            }
+
             // Un trait légèrement plus épais : la ligne reste bien lisible
             // quand les 5 séries se superposent, sans devenir pâteuse.
             signal.LineWidth = 1.5f;
+        }
+
+        /// <summary>
+        /// Rang de l'axe de droite parmi les axes verticaux. Il est relu à chaque
+        /// tracé plutôt qu'écrit en dur : ScottPlot n'ordonne pas ses axes, et
+        /// seul <c>GetYAxes()</c> dit lequel est lequel.
+        /// </summary>
+        private int RightAxisIndex()
+        {
+            List<ScottPlot.IYAxis> axes = [.. plotPanel.Plot.Axes.GetYAxes()];
+            return axes.IndexOf(plotPanel.Plot.Axes.Right);
+        }
+
+        /// <summary>
+        /// Cale chaque axe vertical sur les séries qui lui sont rattachées.
+        /// </summary>
+        /// <remarks>
+        /// ScottPlot ne sait pas faire : son <c>AutoScale()</c> ignore le
+        /// <c>YAxisIndex</c> des courbes et prend toutes les séries ensemble.
+        /// Résultat, un BTC à 80 000 et un ETH à 2 400 donnaient un axe gauche de
+        /// 0 à 90 000, où BTC se retrouvait tassé en haut et ETH collé au plancher.
+        /// Les limites sont donc calculées ici, série par série et axe par axe.
+        /// </remarks>
+        private void ScaleAxes()
+        {
+            if (_plottedSeries.Count == 0)
+            {
+                plotPanel.Plot.Axes.AutoScale();
+                return;
+            }
+
+            // L'axe du temps est commun : il couvre toutes les séries, quelle que
+            // soit leur échelle verticale, sinon les courbes ne seraient plus
+            // alignées dans le temps.
+            double[] allXs = [.. _plottedSeries.SelectMany(plot => plot.Xs)];
+            SetAxisLimits(plotPanel.Plot.Axes.Left, _plottedSeries.Where(plot => !plot.OnRightAxis));
+            SetAxisLimits(plotPanel.Plot.Axes.Right, _plottedSeries.Where(plot => plot.OnRightAxis));
+
+            if (allXs.Length > 0)
+            {
+                double horizontalPadding = (allXs.Max() - allXs.Min()) * 0.1;
+                plotPanel.Plot.Axes.SetLimitsX(
+                    allXs.Min() - horizontalPadding,
+                    allXs.Max() + horizontalPadding,
+                    plotPanel.Plot.Axes.Bottom);
+            }
+        }
+
+        /// <summary>
+        /// Fixe les limites verticales d'un axe d'après les seules séries qui y
+        /// sont dessinées. Une marge de 7,5 % de l'amplitude est laissée de chaque
+        /// côté, comme ScottPlot le fait de lui-même, pour que les courbes ne
+        /// touchent pas les bords.
+        /// </summary>
+        private void SetAxisLimits(ScottPlot.IYAxis axis, IEnumerable<PlottedSeries> plotted)
+        {
+            double[] values = [.. plotted.SelectMany(plot => plot.Values)];
+
+            if (values.Length == 0)
+            {
+                // Aucune série sur cet axe : on le laisse de côté plutôt que de lui
+                // donner un intervalle arbitraire, qui ferait apparaître des
+                // graduations sans rapport avec les données.
+                return;
+            }
+
+            double min = values.Min();
+            double max = values.Max();
+            double padding = (max - min) * 0.075;
+
+            // Série plate : l'amplitude est nulle. On prend alors 1 % du niveau,
+            // avec un plancher à 1 pour éviter un intervalle de largeur nulle.
+            if (padding <= 0)
+            {
+                padding = Math.Max(Math.Abs(max) * 0.01, 1);
+            }
+
+            axis.Min = min - padding;
+            axis.Max = max + padding;
         }
 
         /// <summary>
