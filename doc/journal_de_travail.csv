@@ -1,4 +1,4 @@
-Date,Nom,Temps,État,Description,Type
+Date,Nom,Temps,État,Description
 "24/08/2026","commit initial","[2]","[DONE]",""
 "24/08/2026","commit initial","[105]","[DONE]","explication du projet (CdC, Carnet de voyage, projet hanbook)"
 "24/08/2026","chore(readme): écriture du readme + structure de fichiers","[21]","[DONE]",""
@@ -43,7 +43,7 @@ Date,Nom,Temps,État,Description,Type
 "28/09/2026","refactor(all): verification linq","[30]","[DONE]",""
 "28/09/2026","fix(data): fait que ca écrase les encien si chevauchement","[25]","[DONE]",""
 "28/09/2026","test(unit): ajout 2 tests","[25]","[DONE]",""
-"28/09/2026","perf(plot): SignalXY, survol fenêtré et couleurs fixes par série","[10]","[DONE]","Le rendu devenait poussif avec les 39 000 bougies par série : Scatter redessinait un marqueur par point à chaque zoom. Passage à SignalXY, qui ne trace que la partie visible, et recherche du point survolé limitée à une fenêtre trouvée par dichotomie au lieu de reprojeter toute la série. Les couleurs viennent maintenant d'une palette indexée sur la position de la série, pour que masquer une courbe ne recolore plus les autres. 🤖 Generated with Codebuff Co-Authored-By: Codebuff <noreply@codebuff.com>"
+"28/09/2026","perf(plot): SignalXY, survol fenêtré et couleurs fixes par série","[10]","[DONE]","Le rendu devenait poussif avec les 39 000 bougies par série : Scatter redessinait un marqueur par point à chaque zoom. Passage à SignalXY, qui ne trace que la partie visible, et recherche du point survolé limitée à une fenêtre trouvée par dichotomie au lieu de reprojeter toute la série. Les couleurs viennent maintenant d'une palette indexée sur la position de la série, pour que masquer une courbe ne recolore plus les autres."
 "28/09/2026","doc(rapport): update du rapport","[25]","[WIP]",""
 "28/09/2026","chor(jnr): MAJ","[?]","[DONE]",""
 
@@ -54,3 +54,13 @@ Date,Nom,Temps,État,Description,Type
 "05/10/2026","chor(repo): maj readme","[35]","[DONE]","mise a jour du readme, untrak de la db"
 "05/10/2026","chor(jnr): maj","[1]","[DONE]",""
 "05/10/2026","feat(graph): double échelle","[40]","[WIP]",""
+"05/10/2026","chor(JNR): mise a jour","[2]","[DONE]",""
+
+"16/10/2026","chore(project): Ajouter un commentaire d'évaluation à 80%","[?]","[DONE]",""
+"16/10/2026","chore(project): Ajout de questions pour validation de maîtrise","[?]","[DONE]",""
+"16/10/2026","Ratrapage de teste","[180]","[DONE]",""
+
+"28/10/2026","doc(Rapport): ajout des maquettes et finalisation","[20]","[DONE]",""
+"28/10/2026","doc(rapport): clean","[5]","[DONE]",""
+"28/10/2026","chore(Data): ajoutes des data d'example","[2]","[DONE]",""
+"28/10/2026","WIP(a finir): je ne comprend pas encoer le code mais je push psk pas le choix","[?]","[?]",""

@@ -225,7 +225,7 @@ On travaille en agile, avec des sprints d'une semaine. À la fin de chaque sprin
 | 5 | 28 septembre | Refactoring LINQ, extensions C# | Code conforme aux contraintes | ✅ |
 | 6 | 5 octobre | Tests unitaires (≥ 3), corrections de bugs | Rapport de tests | ✅ |
 | 7 | 12 octobre | Finitions, UI, documentation | Version candidate | ✅ |
-| 8 | 19–30 octobre | Rapport final, bilan, release GitHub | Livraison finale | 🟡 |
+| 8 | 19–30 octobre | Rapport final, bilan, release GitHub | Livraison finale | ✅ |
 
 > **Légende des statuts :**
 > - ⬜ Non commencé
@@ -299,7 +299,7 @@ Les 9 tests automatisés passent, en moins d'une seconde (dernière exécution :
 
 ## 5. Usage de l'intelligence artificielle dans le projet
 
-Cette section décrit l'usage réel de l'IA sur le projet : les outils, leur mode d'utilisation, trois exemples concrets et ce que j'ai vérifié avant de garder chaque modification. Le détail des sessions se trouve dans le journal de travail et dans l'historique Git.
+Cette section décrit l'usage réel de l'IA sur le projet : les outils, leur mode d'utilisation, deux exemples concrets et ce que j'ai vérifié avant de garder chaque modification. Le détail des sessions se trouve dans le journal de travail et dans l'historique Git.
 
 ### 5.1 Outils et modes d'utilisation
 
@@ -329,7 +329,7 @@ Transparence sur les traces : deux commits portent encore la co-signature de Cod
 
 - La première version ne compilait pas : `IPalette.GetColor` renvoie un `ScottPlot.Color`, pas un `System.Drawing.Color`. Correction explicite dans le code.
 - Les mesures venaient d'un banc d'essai temporaire, supprimé après relevé ; j'ai gardé les valeurs dans le journal pour pouvoir comparer plus tard.
-- Pas de `NaN` dans les données pour représenter les trous : la documentation de ScottPlot indique que les tracés de type signal ne les gèrent pas. D'où le découpage en blocs de l'exemple 3.
+- Pas de `NaN` dans les données pour représenter les trous : la documentation de ScottPlot indique que les tracés de type signal ne les gèrent pas. D'où le découpage en blocs de l'exemple 2.
 
 #### Exemple 2 — Trous de données et chevauchement d'import
 
@@ -364,7 +364,7 @@ Le planning a été suivi dans les grandes lignes : les cinq user stories ont é
 - **Tests (sprint 6)** : consolidés le 05/10. La première suite contenait des tests peu pertinents ; ils ont été supprimés puis remplacés par 9 tests ciblés.
 - **Sprint 8** : le rapport, les maquettes, le jeu d'exemple et l'intégration de `feature/double-echelle` ont été finalisés en fin de projet.
 
-Une semaine d'absence (31/08) figure au journal ; elle a été rattrapée sur les semaines suivantes. Au total, le journal compte 49 entrées et 1 127 minutes, dont 180 minutes d'absence, soit environ 15 h 45 de travail effectif : l'enveloppe de 24 périodes n'a pas été dépassée.
+Une semaine d'absence (31/08) figure au journal ; elle a été rattrapée sur les semaines suivantes. Au total, le journal compte 57 entrées et 1 336 minutes, dont 180 minutes d'absence, soit environ 19 h 15 de travail effectif, en classe et à la maison (5 entrées n'ont pas de durée renseignée).
 
 ### 6.2 Méthodologie
 
@@ -376,7 +376,7 @@ Git suit des commits conventionnels (`feat`, `fix`, `refactor`, `doc`, `chor`) e
 ### 6.3 Problèmes rencontrés
 
 1. **Des échelles incomparables.** BTC à environ 83 000 USDT contre EUR à 1,14 : sur un même axe, l'EUR devient une ligne plate. Solution : le mode base 100 (chaque série part de 100) et la double échelle verticale en prix réel.
-2. **Le volume.** Cinq fichiers d'environ 50 Mo, 909 770 bougies, une base de 24 Mo. Il a fallu importer une fois, ne réimporter que si un JSON a changé et fusionner par upsert pour ne rien dupliquer.
+2. **Le volume.** Cinq fichiers d'environ 50 Mo, 909 770 bougies, une base de 23 Mo. Il a fallu importer une fois, ne réimporter que si un JSON a changé et fusionner par upsert pour ne rien dupliquer.
 3. **La fluidité.** Environ 100 000 marqueurs dessinés par image avec `Scatter`, et 6,30 ms par mouvement de souris pour le survol. `SignalXY` et la dichotomie ramènent le rendu à 10,3 ms par image et le survol à 0,18 ms.
 4. **Les trous et les chevauchements.** Un trou ne doit pas être traversé par un trait, et une bougie réimportée doit écraser l'ancienne. D'où la segmentation en blocs et l'upsert.
 5. **La limite de l'API.** 1000 bougies par requête : 14 jours en 1 minute font environ 20 000 bougies par série, donc une pagination obligatoire dans le script.
